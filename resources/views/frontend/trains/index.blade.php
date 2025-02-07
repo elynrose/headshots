@@ -61,7 +61,7 @@
                                             {{ $train->status ?? '' }}
                                         </td>
                                         <td>
-                                            {{ $train->diffusers_lora_file ?? '' }}
+                                            {{ $train->zipped_file_url ?? '' }}
                                         </td>
                                         <td>
                                             {{ $train->config_file ?? '' }}

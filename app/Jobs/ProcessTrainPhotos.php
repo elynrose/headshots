@@ -9,10 +9,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\File;
 use ZipArchive;
 use Exception;
+use Illuminate\Support\Facades\Storage;
+
+
 
 
 class ProcessTrainPhotos implements ShouldQueue
@@ -24,6 +26,7 @@ class ProcessTrainPhotos implements ShouldQueue
     public function __construct(Train $model)
     {
         $this->model = $model;
+
     }
 
     public function handle()
@@ -70,20 +73,54 @@ class ProcessTrainPhotos implements ShouldQueue
              Storage::disk('s3')->putFileAs('train_photos', new File($path), $zipFileName, 'public');
 
              //Get the key
-            $key = 'train_photos/' . $zipFileName;
+            $key = $zipFileName;
 
-            //get the temporary url
-            $url = Storage::disk('s3')->temporaryUrl($key, now()->addMinutes(5));
-
-             //Get the url
-           // $url = Storage::disk('s3')->url($zipFileName);
-            // Update the Train model with the URL
-            $this->model->update(['diffusers_lora_file' => $url]);
+            // Get the URL of the uploaded file
+            $url = Storage::disk('s3')->url($key);
+           
+            // Update the model with the key so you can pull the url
+            $this->model->update(['zipped_file_url' => $url, 'temporary_amz_url' => $key]);
+            
             // Clean up the local ZIP file
             unlink($path);
 
+            $this->submitTrainingJob($url);
+
         } catch (Exception $e) {
+            return false;
+            
             \Log::error('ZIP processing failed: ' . $e->getMessage());
+        }
+    }
+
+
+    public function submitTrainingJob($url, $model)
+    {
+        try {
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post('https://queue.fal.run/fal-ai/flux-lora-fast-training', [
+            'headers' => [
+                'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'images_data_url' => $url,
+            ],
+            ]);
+            $responseBody = $response->getBody()->getContents();
+            \Log::info("Response: " . $responseBody);
+            $responseData = json_decode($responseBody, true);
+            // Update the model with the response data    
+            $model->update([
+                'status' => $responseData['status'],
+                'requestid' => $responseData['request_id'],
+                'response_url' => $responseData['response_url'],
+                'status_url' => $responseData['status_url'],
+                'cancel_url' => $responseData['cancel_url'],
+                'queue_position' => $responseData['queue_position'],
+            ]);
+        } catch (Exception $e) {
+            \Log::error('Training job submission failed: ' . $e->getMessage());
         }
     }
 }    

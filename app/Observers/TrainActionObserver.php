@@ -6,24 +6,32 @@ use App\Models\Train;
 use App\Notifications\DataChangeEmailNotification;
 use Illuminate\Support\Facades\Notification;
 use App\Jobs\ProcessTrainPhotos;
+use App\Jobs\SendTrainingRequest;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Storage;
+
+
 
 
 class TrainActionObserver
 {
+
+    protected $model;
+
+    /**
+     * Handle the Train "created" event.
+     *
+     * @param  \App\Models\Train  $model
+     * @return void
+     */
     public function created(Train $model)
     {
             
-        dispatch(new ProcessTrainPhotos($model));       
+       dispatch(new ProcessTrainPhotos($model));  
+       $model->update(['status' => 'Processing']);
 
     }
 
-    public function updated(Train $model)
-    {
-        $data  = ['action' => 'updated', 'model_name' => 'Train'];
-        $users = \App\Models\User::whereHas('roles', function ($q) {
-            return $q->where('title', 'Admin');
-        })->get();
-        
-     //   Notification::send($users, new DataChangeEmailNotification($data));
-    }
+
+
 }

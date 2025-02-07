@@ -31,6 +31,30 @@ class UpdateTrainRequest extends FormRequest
                 'string',
                 'nullable',
             ],
+            'zipped_file_url' => [
+                'string',
+                'nullable',
+            ],
+            'response_url' => [
+                'string',
+                'nullable',
+            ],
+            'status_url' => [
+                'string',
+                'nullable',
+            ],
+            'cancel_url' => [
+                'string',
+                'nullable',
+            ],
+            'queue_position' => [
+                'integer',
+                'nullable',
+            ],
+            'temporary_amz_url' => [
+                'string',
+                'nullable',
+            ],
             'file_size' => [
                 'string',
                 'nullable',
