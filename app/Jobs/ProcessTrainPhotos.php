@@ -84,7 +84,19 @@ class ProcessTrainPhotos implements ShouldQueue
             // Clean up the local ZIP file
             unlink($path);
 
-            $this->submitTrainingJob($url);
+           $responseBody = $this->submitTrainingJob($url);
+
+           $responseData = json_decode($responseBody, true);
+
+           // Update the model with the response data    
+           $this->model->update([
+               'status' => $responseData['status'],
+               'requestid' => $responseData['request_id'],
+               'response_url' => $responseData['response_url'],
+               'status_url' => $responseData['status_url'],
+               'cancel_url' => $responseData['cancel_url'],
+               'queue_position' => $responseData['queue_position'],
+           ]);
 
         } catch (Exception $e) {
             return false;
@@ -94,7 +106,7 @@ class ProcessTrainPhotos implements ShouldQueue
     }
 
 
-    public function submitTrainingJob($url, $model)
+    public function submitTrainingJob($url)
     {
         try {
             $client = new \GuzzleHttp\Client();
@@ -109,16 +121,8 @@ class ProcessTrainPhotos implements ShouldQueue
             ]);
             $responseBody = $response->getBody()->getContents();
             \Log::info("Response: " . $responseBody);
-            $responseData = json_decode($responseBody, true);
-            // Update the model with the response data    
-            $model->update([
-                'status' => $responseData['status'],
-                'requestid' => $responseData['request_id'],
-                'response_url' => $responseData['response_url'],
-                'status_url' => $responseData['status_url'],
-                'cancel_url' => $responseData['cancel_url'],
-                'queue_position' => $responseData['queue_position'],
-            ]);
+            return $responseBody;
+
         } catch (Exception $e) {
             \Log::error('Training job submission failed: ' . $e->getMessage());
         }
