@@ -5,16 +5,16 @@ namespace App\Observers;
 use App\Models\Train;
 use App\Notifications\DataChangeEmailNotification;
 use Illuminate\Support\Facades\Notification;
+use App\Jobs\ProcessTrainPhotos;
+
 
 class TrainActionObserver
 {
     public function created(Train $model)
     {
-        $data  = ['action' => 'created', 'model_name' => 'Train'];
-        $users = \App\Models\User::whereHas('roles', function ($q) {
-            return $q->where('title', 'Admin');
-        })->get();
-        Notification::send($users, new DataChangeEmailNotification($data));
+            
+        dispatch(new ProcessTrainPhotos($model));       
+
     }
 
     public function updated(Train $model)
@@ -23,6 +23,7 @@ class TrainActionObserver
         $users = \App\Models\User::whereHas('roles', function ($q) {
             return $q->where('title', 'Admin');
         })->get();
-        Notification::send($users, new DataChangeEmailNotification($data));
+        
+     //   Notification::send($users, new DataChangeEmailNotification($data));
     }
 }

@@ -37,23 +37,11 @@
                             @endif
                             <span class="help-block">{{ trans('cruds.photo.fields.use_for_training_helper') }}</span>
                         </div>
-                        <div class="form-group">
-                            <label class="required" for="user_id">{{ trans('cruds.photo.fields.user') }}</label>
-                            <select class="form-control select2" name="user_id" id="user_id" required>
-                                @foreach($users as $id => $entry)
-                                    <option value="{{ $id }}" {{ old('user_id') == $id ? 'selected' : '' }}>{{ $entry }}</option>
-                                @endforeach
-                            </select>
-                            @if($errors->has('user'))
-                                <div class="invalid-feedback">
-                                    {{ $errors->first('user') }}
-                                </div>
-                            @endif
-                            <span class="help-block">{{ trans('cruds.photo.fields.user_helper') }}</span>
-                        </div>
+                       
                         <div class="form-group">
                             <button class="btn btn-danger" type="submit">
-                                {{ trans('global.save') }}
+                                <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
+                                {{ trans('global.upload') }}
                             </button>
                         </div>
                     </form>

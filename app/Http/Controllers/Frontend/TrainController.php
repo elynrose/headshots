@@ -11,6 +11,7 @@ use App\Models\User;
 use Gate;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use ZipArchive;
 
 class TrainController extends Controller
 {
@@ -34,7 +35,14 @@ class TrainController extends Controller
 
     public function store(StoreTrainRequest $request)
     {
-        $train = Train::create($request->all());
+        $train = Train::create(
+            [
+                'user_id' => $request->user_id,
+                'title' => $request->title,
+                'status'=> 'New',
+
+            ]
+        );
 
         return redirect()->route('frontend.trains.index');
     }
@@ -80,6 +88,7 @@ class TrainController extends Controller
         $trains = Train::find(request('ids'));
 
         foreach ($trains as $train) {
+
             $train->delete();
         }
 

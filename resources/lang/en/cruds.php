@@ -98,12 +98,12 @@ return [
         ],
     ],
     'train' => [
-        'title'          => 'Train',
-        'title_singular' => 'Train',
+        'title'          => 'New Training',
+        'title_singular' => 'New Training',
         'fields'         => [
             'id'                         => 'ID',
             'id_helper'                  => ' ',
-            'title'                      => 'Title',
+            'title'                      => 'Give this training a title',
             'title_helper'               => ' ',
             'status'                     => 'Status',
             'status_helper'              => ' ',

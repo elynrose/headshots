@@ -1,20 +1,13 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!DOCTYPE html>
+<html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-
-    <!-- Styles -->
+    <title>{{ trans('panel.site_title') }}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet" />
     <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" rel="stylesheet" />
@@ -24,6 +17,7 @@
     <link href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/@coreui/coreui@3.2/dist/css/coreui.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/1.5.0/css/perfect-scrollbar.min.css" rel="stylesheet" />
@@ -31,169 +25,250 @@
     @yield('styles')
 </head>
 
-<body>
-    <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+<body class="c-app">
+    @include('partials.fmenu')
+    <div class="c-wrapper">
+        <header class="c-header c-header-fixed px-3">
+            <button class="c-header-toggler c-class-toggler d-lg-none mfe-auto" type="button" data-target="#sidebar" data-class="c-sidebar-show">
+                <i class="fas fa-fw fa-bars"></i>
+            </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav mr-auto">
-                        @guest
-                        @else
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('frontend.home') }}">
-                                    {{ __('Dashboard') }}
-                                </a>
-                            </li>
-                        @endguest
-                    </ul>
+            <a class="c-header-brand d-lg-none" href="#">{{ trans('panel.site_title') }}</a>
 
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ml-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                            @if(Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }} <span class="caret"></span>
-                                </a>
+            <button class="c-header-toggler mfs-3 d-md-down-none" type="button" responsive="true">
+                <i class="fas fa-fw fa-bars"></i>
+            </button>
 
-                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-
-                                    <a class="dropdown-item" href="{{ route('frontend.profile.index') }}">{{ __('My profile') }}</a>
-
-                                    @can('user_management_access')
-                                        <a class="dropdown-item disabled" href="#">
-                                            {{ trans('cruds.userManagement.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('permission_access')
-                                        <a class="dropdown-item ml-3" href="{{ route('frontend.permissions.index') }}">
-                                            {{ trans('cruds.permission.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('role_access')
-                                        <a class="dropdown-item ml-3" href="{{ route('frontend.roles.index') }}">
-                                            {{ trans('cruds.role.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('user_access')
-                                        <a class="dropdown-item ml-3" href="{{ route('frontend.users.index') }}">
-                                            {{ trans('cruds.user.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('photo_access')
-                                        <a class="dropdown-item" href="{{ route('frontend.photos.index') }}">
-                                            {{ trans('cruds.photo.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('train_access')
-                                        <a class="dropdown-item" href="{{ route('frontend.trains.index') }}">
-                                            {{ trans('cruds.train.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('generate_access')
-                                        <a class="dropdown-item" href="{{ route('frontend.generates.index') }}">
-                                            {{ trans('cruds.generate.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('credit_access')
-                                        <a class="dropdown-item" href="{{ route('frontend.credits.index') }}">
-                                            {{ trans('cruds.credit.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('payment_access')
-                                        <a class="dropdown-item" href="{{ route('frontend.payments.index') }}">
-                                            {{ trans('cruds.payment.title') }}
-                                        </a>
-                                    @endcan
-                                    @can('user_alert_access')
-                                        <a class="dropdown-item" href="{{ route('frontend.user-alerts.index') }}">
-                                            {{ trans('cruds.userAlert.title') }}
-                                        </a>
-                                    @endcan
-
-                                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <main class="py-4">
-            @if(session('message'))
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="alert alert-success" role="alert">{{ session('message') }}</div>
+            <ul class="c-header-nav ml-auto">
+                @if(count(config('panel.available_languages', [])) > 1)
+                    <li class="c-header-nav-item dropdown d-md-down-none">
+                        <a class="c-header-nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            {{ strtoupper(app()->getLocale()) }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            @foreach(config('panel.available_languages') as $langLocale => $langName)
+                                <a class="dropdown-item" href="{{ url()->current() }}?change_language={{ $langLocale }}">{{ strtoupper($langLocale) }} ({{ $langName }})</a>
+                            @endforeach
                         </div>
-                    </div>
-                </div>
-            @endif
-            @if($errors->count() > 0)
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="alert alert-danger">
-                                <ul class="list-unstyled mb-0">
-                                    @foreach($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+                    </li>
+                @endif
+
+                <ul class="c-header-nav ml-auto">
+                    <li class="c-header-nav-item dropdown notifications-menu">
+                        <a href="#" class="c-header-nav-link" data-toggle="dropdown">
+                            <i class="far fa-bell"></i>
+                            @php($alertsCount = \Auth::user()->userUserAlerts()->where('read', false)->count())
+                                @if($alertsCount > 0)
+                                    <span class="badge badge-warning navbar-badge">
+                                        {{ $alertsCount }}
+                                    </span>
+                                @endif
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                            @if(count($alerts = \Auth::user()->userUserAlerts()->withPivot('read')->limit(10)->orderBy('created_at', 'ASC')->get()->reverse()) > 0)
+                                @foreach($alerts as $alert)
+                                    <div class="dropdown-item">
+                                        <a href="{{ $alert->alert_link ? $alert->alert_link : "#" }}" target="_blank" rel="noopener noreferrer">
+                                            @if($alert->pivot->read === 0) <strong> @endif
+                                                {{ $alert->alert_text }}
+                                                @if($alert->pivot->read === 0) </strong> @endif
+                                        </a>
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="text-center">
+                                    {{ trans('global.no_alerts') }}
+                                </div>
+                            @endif
+                        </div>
+                    </li>
+                </ul>
+
+            </ul>
+        </header>
+
+        <div class="c-body">
+            <main class="c-main">
+
+
+                <div class="container-fluid">
+                    @if(session('message'))
+                        <div class="row mb-2">
+                            <div class="col-lg-12">
+                                <div class="alert alert-success" role="alert">{{ session('message') }}</div>
                             </div>
                         </div>
-                    </div>
+                    @endif
+                    @if($errors->count() > 0)
+                        <div class="alert alert-danger">
+                            <ul class="list-unstyled">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    @yield('content')
+
                 </div>
-            @endif
-            @yield('content')
-        </main>
+
+
+            </main>
+            <form id="logoutform" action="{{ route('logout') }}" method="POST" style="display: none;">
+                {{ csrf_field() }}
+            </form>
+        </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/1.5.0/perfect-scrollbar.min.js"></script>
+    <script src="https://unpkg.com/@coreui/coreui@3.2/dist/js/coreui.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script src="//cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
+    <script src="//cdn.datatables.net/buttons/1.2.4/js/buttons.flash.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/pdfmake.min.js"></script>
+    <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/16.0.0/classic/ckeditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
+    <script>
+        $(function() {
+  let copyButtonTrans = '{{ trans('global.datatables.copy') }}'
+  let csvButtonTrans = '{{ trans('global.datatables.csv') }}'
+  let excelButtonTrans = '{{ trans('global.datatables.excel') }}'
+  let pdfButtonTrans = '{{ trans('global.datatables.pdf') }}'
+  let printButtonTrans = '{{ trans('global.datatables.print') }}'
+  let colvisButtonTrans = '{{ trans('global.datatables.colvis') }}'
+  let selectAllButtonTrans = '{{ trans('global.select_all') }}'
+  let selectNoneButtonTrans = '{{ trans('global.deselect_all') }}'
+
+  let languages = {
+    'en': 'https://cdn.datatables.net/plug-ins/1.10.19/i18n/English.json',
+        'fr': 'https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json',
+        'es': 'https://cdn.datatables.net/plug-ins/1.10.19/i18n/Spanish.json'
+  };
+
+  $.extend(true, $.fn.dataTable.Buttons.defaults.dom.button, { className: 'btn' })
+  $.extend(true, $.fn.dataTable.defaults, {
+    language: {
+      url: languages['{{ app()->getLocale() }}']
+    },
+    columnDefs: [{
+        orderable: false,
+        className: 'select-checkbox',
+        targets: 0
+    }, {
+        orderable: false,
+        searchable: false,
+        targets: -1
+    }],
+    select: {
+      style:    'multi+shift',
+      selector: 'td:first-child'
+    },
+    order: [],
+    scrollX: true,
+    pageLength: 100,
+    dom: 'lBfrtip<"actions">',
+    buttons: [
+      {
+        extend: 'selectAll',
+        className: 'btn-primary',
+        text: selectAllButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        },
+        action: function(e, dt) {
+          e.preventDefault()
+          dt.rows().deselect();
+          dt.rows({ search: 'applied' }).select();
+        }
+      },
+      {
+        extend: 'selectNone',
+        className: 'btn-primary',
+        text: selectNoneButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      },
+      {
+        extend: 'copy',
+        className: 'btn-default',
+        text: copyButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      },
+      {
+        extend: 'csv',
+        className: 'btn-default',
+        text: csvButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      },
+      {
+        extend: 'excel',
+        className: 'btn-default',
+        text: excelButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      },
+      {
+        extend: 'pdf',
+        className: 'btn-default',
+        text: pdfButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      },
+      {
+        extend: 'print',
+        className: 'btn-default',
+        text: printButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      },
+      {
+        extend: 'colvis',
+        className: 'btn-default',
+        text: colvisButtonTrans,
+        exportOptions: {
+          columns: ':visible'
+        }
+      }
+    ]
+  });
+
+  $.fn.dataTable.ext.classes.sPageButton = '';
+});
+
+    </script>
+    <script>
+        $(document).ready(function () {
+    $(".notifications-menu").on('click', function () {
+        if (!$(this).hasClass('open')) {
+            $('.notifications-menu .label-warning').hide();
+            $.get('/admin/user-alerts/read');
+        }
+    });
+});
+
+    </script>
+    @yield('scripts')
 </body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/1.5.0/perfect-scrollbar.min.js"></script>
-<script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
-<script src="//cdn.datatables.net/buttons/1.2.4/js/buttons.flash.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.print.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.colVis.min.js"></script>
-<script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/pdfmake.min.js"></script>
-<script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/16.0.0/classic/ckeditor.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
-<script src="{{ asset('js/main.js') }}"></script>
-@yield('scripts')
 
 </html>
