@@ -11,6 +11,7 @@ class CreatePhotosTable extends Migration
         Schema::create('photos', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->boolean('use_for_training')->default(0)->nullable();
+            $table->string('url')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

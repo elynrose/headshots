@@ -54,49 +54,63 @@ class ProcessTrainPhotos implements ShouldQueue
     
         try {
             if ($zip->open($path, ZipArchive::CREATE) === TRUE) {
-                foreach ($photos as $media) {
-                    $files = $media->getMedia('photo');
+        
+            foreach ($photos as $media) {
+                $files = $media->getMedia('photo');
                     foreach ($files as $file) {
-                        if (file_exists($file->getPath())) {
-                            $zip->addFile($file->getPath(), basename($file->file_name));
-                        } else {
-                            \Log::error("File not found: " . $file->getPath());
-                        }
+                        $s3Url = $file->getUrl();
+                        $fileContents = file_get_contents($s3Url);
+                            if ($fileContents !== false) {
+                                $zip->addFromString(basename($s3Url), $fileContents);                 
+                            } else {
+                                \Log::error("Failed to download file from S3: " . $s3Url);
+                            }
                     }
-                }
-                $zip->close();
+            }
+
+            $zip->close();
             } else {
-                throw new Exception("Unable to create ZIP file.");
+            throw new Exception("Unable to create ZIP file.");
             }
     
             // Process the ZIP file (e.g., upload to cloud storage)
-             Storage::disk('s3')->putFileAs('train_photos', new File($path), $zipFileName, 'public');
-
+             Storage::disk('s3')->putFileAs('train_photos', new File($path), $zipFileName, ['visibility' => 'public']);
+             
              //Get the key
             $key = $zipFileName;
-
             // Get the URL of the uploaded file
-            $url = Storage::disk('s3')->url($key);
-           
+            $url = Storage::disk('s3')->url('train_photos/' . $key);
+            \Log::info("ZIP file uploaded successfully. URL: " . $url);
             // Update the model with the key so you can pull the url
             $this->model->update(['zipped_file_url' => $url, 'temporary_amz_url' => $key]);
-            
             // Clean up the local ZIP file
             unlink($path);
 
-           $responseBody = $this->submitTrainingJob($url);
+            \Log::info("ZIP file created and uploaded successfully. URL: " . $url);
+           
+            try  {
+                //Get the url of the uploaded file
+                $response = $this->submitTrainingJob($url);
+                $responseBody = $response->getBody()->getContents();
+                $responseData = json_decode($responseBody, true);
 
-           $responseData = json_decode($responseBody, true);
+            if ($responseData !== null ) {
+                // Update the model with the response data    
+                $this->model->status = $responseData['status'];
+                $this->model->requestid = $responseData['request_id'];
+                $this->model->status_url = $responseData['status_url'];
+                $this->model->cancel_url = $responseData['cancel_url'];
+                $this->model->queue_position = $responseData['queue_position'];
+                $this->model->save();
+            } else {
+                \Log::error('Failed to decode JSON response: ' . $responseData);
+            }
+            } catch (Exception $e) {
+                \Log::error('Training job submission failed: ' . $e->getMessage());
+            }
 
-           // Update the model with the response data    
-           $this->model->update([
-               'status' => $responseData['status'],
-               'requestid' => $responseData['request_id'],
-               'response_url' => $responseData['response_url'],
-               'status_url' => $responseData['status_url'],
-               'cancel_url' => $responseData['cancel_url'],
-               'queue_position' => $responseData['queue_position'],
-           ]);
+
+  
 
         } catch (Exception $e) {
             return false;
@@ -119,9 +133,8 @@ class ProcessTrainPhotos implements ShouldQueue
                 'images_data_url' => $url,
             ],
             ]);
-            $responseBody = $response->getBody()->getContents();
-            \Log::info("Response: " . $responseBody);
-            return $responseBody;
+            
+            return $response;;
 
         } catch (Exception $e) {
             \Log::error('Training job submission failed: ' . $e->getMessage());

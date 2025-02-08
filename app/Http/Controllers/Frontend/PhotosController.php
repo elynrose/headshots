@@ -41,7 +41,22 @@ class PhotosController extends Controller
         $photo = Photo::create($request->all());
 
         foreach ($request->input('photo', []) as $file) {
-            $photo->addMedia(storage_path('tmp/uploads/' . basename($file)))->toMediaCollection('photo');
+            $photo->addMedia(storage_path('tmp/uploads/' . basename($file)))
+                  ->toMediaCollection('photo', 's3Photos')
+                  ->setCustomProperty('visibility', 'public');
+            
+            $key = $photo->getMedia('photo')->first()->getKey();
+            $filename = $photo->getMedia('photo')->first()->file_name;
+
+            $name = $key . '/' . $filename;
+            $amz_url = env('AWS_FILE_URL') . '/' . $name;
+
+            //Get the url of the uploaded file
+           // $url = $photo->getMedia('photo')->first()->getUrl($key);
+
+            //Update the model with the url
+            $photo->update(['url' => $amz_url, 'temporary_amz_url' => $amz_url]);
+
         }
 
         if ($media = $request->input('ck-media', false)) {
@@ -97,6 +112,8 @@ class PhotosController extends Controller
         abort_if(Gate::denies('photo_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $photo->delete();
+        //Delete from S3
+        $photo->clearMediaCollection('photo');
 
         return back();
     }
@@ -107,6 +124,9 @@ class PhotosController extends Controller
 
         foreach ($photos as $photo) {
             $photo->delete();
+            //Delete from S3
+            $photo->clearMediaCollection('photo');
+
         }
 
         return response(null, Response::HTTP_NO_CONTENT);

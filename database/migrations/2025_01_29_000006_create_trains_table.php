@@ -10,7 +10,7 @@ class CreateTrainsTable extends Migration
     {
         Schema::create('trains', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('requestid')->nullable();
+            $table->string('requestid')->nullable();
             $table->string('title');
             $table->string('status')->nullable();
             $table->longText('zipped_file_url')->nullable();

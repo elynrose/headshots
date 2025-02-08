@@ -18,10 +18,8 @@ class StoreTrainRequest extends FormRequest
     {
         return [
             'requestid' => [
+                'string',
                 'nullable',
-                'integer',
-                'min:-2147483648',
-                'max:2147483647',
             ],
             'title' => [
                 'string',
