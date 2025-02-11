@@ -14,7 +14,12 @@ class CreateGeneratesTable extends Migration
             $table->integer('width')->nullable();
             $table->integer('height')->nullable();
             $table->string('status')->nullable();
+            $table->string('requestid')->nullable();
             $table->longText('image_url')->nullable();
+            $table->longText('response_url')->nullable();
+            $table->longText('cancel_url')->nullable();
+            $table->longText('status_url')->nullable();
+            $table->integer('queue_position')->nullable();
             $table->string('content_type')->nullable();
             $table->string('inference')->nullable();
             $table->string('seed')->nullable();

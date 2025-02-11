@@ -79,10 +79,13 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     // Train
     Route::delete('trains/destroy', 'TrainController@massDestroy')->name('trains.massDestroy');
     Route::resource('trains', 'TrainController');
+    Route::post('trains/status', 'TrainController@status')->name('trains.status');
 
     // Generate
     Route::delete('generates/destroy', 'GenerateController@massDestroy')->name('generates.massDestroy');
     Route::resource('generates', 'GenerateController');
+    Route::post('generates/status', 'GenerateController@status')->name('generates.status');
+
 
     // Credits
     Route::delete('credits/destroy', 'CreditsController@massDestroy')->name('credits.massDestroy');

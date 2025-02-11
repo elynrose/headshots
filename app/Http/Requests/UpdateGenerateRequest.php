@@ -27,6 +27,26 @@ class UpdateGenerateRequest extends FormRequest
                 'min:-2147483648',
                 'max:2147483647',
             ],
+            'response_url' => [
+                'string',
+                'nullable',
+            ],
+            'status_url' => [
+                'string',
+                'nullable',
+            ],
+            'cancel_url' => [
+                'string',
+                'nullable',
+            ],
+            'queue_position' => [
+                'integer',
+                'nullable',
+            ],
+            'requestid' => [
+                'string',
+                'nullable',
+            ],
             'height' => [
                 'nullable',
                 'integer',

@@ -13,116 +13,42 @@
                 </div>
             @endcan
             <div class="card">
-                <div class="card-header">
-                    {{ trans('cruds.generate.title_singular') }} {{ trans('global.list') }}
-                </div>
-
+           
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class=" table table-bordered table-striped table-hover datatable datatable-Generate">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        {{ trans('cruds.generate.fields.prompt') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.generate.fields.train') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.status') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.diffusers_lora_file') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.config_file') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.file_size') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.requestid') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.generate.fields.status') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.generate.fields.image_url') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.generate.fields.credit') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.generate.fields.user') }}
-                                    </th>
-                                    <th>
-                                        &nbsp;
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($generates as $key => $generate)
-                                    <tr data-entry-id="{{ $generate->id }}">
-                                        <td>
-                                            {{ $generate->prompt ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->train->title ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->train->status ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->train->diffusers_lora_file ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->train->config_file ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->train->file_size ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->train->requestid ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->status ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->image_url ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->credit ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $generate->user->name ?? '' }}
-                                        </td>
-                                        <td>
-                                            @can('generate_show')
-                                                <a class="btn btn-xs btn-primary" href="{{ route('frontend.generates.show', $generate->id) }}">
-                                                    {{ trans('global.view') }}
-                                                </a>
-                                            @endcan
-
-                                            @can('generate_edit')
-                                                <a class="btn btn-xs btn-info" href="{{ route('frontend.generates.edit', $generate->id) }}">
-                                                    {{ trans('global.edit') }}
-                                                </a>
-                                            @endcan
-
+                        <div class="row">
+                            @foreach($generates as $key => $generate)
+                                <div class="col-md-4 @if($generate->status=='NEW' || $generate->status=='IN_QUEUE' || $generate->status=='IN_PROGRESS') waiting @elseif($generate->status=='COMPLETED' || $generate->status=='ERROR') @endif generate_{{$generate->id}}" data-id="{{ $generate->id }}">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                         <div class="row">
+                                            <div class="col-md-12">
+                                              <a href="{{ $generate->image_url ?? '' }}"> 
+                                                <img src="{{ $generate->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$generate->id}}" alt="{{$generate->title}}">
+                                             </a> 
+                                            </div>
+                                            <div class="col-md-12">
+                                            <p class="card-text">
+                                                <p> <strong>{{ $generate->train->title ?? '' }}</strong><br>
+                                               <span class="small text-muted"> <strong>{{ trans('cruds.train.fields.file_size') }}:</strong> {{ $generate->train->file_size ?? '' }}<br>
+                                                <strong>{{ trans('cruds.generate.fields.status') }}:</strong> <span id="status_{{$generate->id}}">{{ $generate->status ?? '' }}</span><br>
+                                                <strong>{{ trans('cruds.generate.fields.credit') }}:</strong> {{ $generate->credit ?? '' }}</span>
+                                            </p>
                                             @can('generate_delete')
                                                 <form action="{{ route('frontend.generates.destroy', $generate->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('global.delete') }}">
+                                                    <button type="submit" class="btn btn-danger btn-xs" value="{{ trans('global.delete') }}"><i class="fas fa-ban"></i></button>
                                                 </form>
                                             @endcan
 
-                                        </td>
-
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                            </div>
+                                         </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -134,6 +60,37 @@
 @section('scripts')
 @parent
 <script>
+if ($('.waiting').length > 0) {
+    setInterval(function() {
+        $('.waiting').each(function() {
+            var generateId = $(this).data('id');
+            $.ajax({
+                url: '{{ route('frontend.generates.status') }}',
+                method: 'POST',
+                data: { id: generateId },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    console.log(response);
+                    if (response.status === 'COMPLETED') {
+                        $('.waiting.generate_' + generateId).removeClass('waiting');
+                        $('.image_' + generateId).attr('src', response.images[0].url);
+                        $('#status_' + generateId).text('COMPLETED');
+                    } else if (response.status === 'ERROR') {
+                        $('.waiting.generate_' + generateId).removeClass('waiting').addClass('error');
+                        $('#status_' + generateId).text('ERROR');
+                    }
+                },
+                error: function() {
+                    console.log('Error fetching status for generate ID:', generateId);
+                }
+            });
+        });
+    }, 5000);
+}
+
+
     $(function () {
   let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
 @can('generate_delete')

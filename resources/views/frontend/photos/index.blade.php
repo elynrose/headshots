@@ -4,131 +4,82 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
             @can('photo_create')
-                <div style="margin-bottom: 10px;" class="row">
-                    <div class="col-lg-12">
-                        <a class="btn btn-success" href="{{ route('frontend.photos.create') }}">
-                            {{ trans('global.add') }} {{ trans('cruds.photo.title_singular') }}
-                        </a>
-                    </div>
+                <div class="action-bar mb-5">
+                    <a class="btn btn-success" href="{{ route('frontend.photos.create') }}">
+                        {{ trans('global.add') }} {{ trans('cruds.photo.title_singular') }}
+                    </a>
                 </div>
             @endcan
-            <div class="card">
-                <div class="card-header">
-                    {{ trans('cruds.photo.title_singular') }} {{ trans('global.list') }}
-                </div>
-
+            
+            <div class="card shadow-sm">
+      
+                
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class=" table table-bordered table-striped table-hover datatable datatable-Photo">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        {{ trans('cruds.photo.fields.photo') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.photo.fields.use_for_training') }}
-                                    </th>
-                                    <th>
-                                        &nbsp;
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($photos as $key => $photo)
-                                    <tr data-entry-id="{{ $photo->id }}">
-                                        <td>
-                                            @foreach($photo->photo as $key => $media)
-                                                <a href="{{ $media->getUrl() }}" target="_blank" style="display: inline-block">
-                                                    <img src="{{ $media->getUrl('thumb') }}">
-                                                </a>
-                                            @endforeach
-                                        </td>
-                                        <td>
-                                            <span style="display:none">{{ $photo->use_for_training ?? '' }}</span>
-                                            <input type="checkbox" disabled="disabled" {{ $photo->use_for_training ? 'checked' : '' }}>
-                                        </td>
-                                        <td>
-                                            @can('photo_show')
-                                                <a class="btn btn-xs btn-primary" href="{{ route('frontend.photos.show', $photo->id) }}">
-                                                    {{ trans('global.view') }}
-                                                </a>
-                                            @endcan
-
-                                            @can('photo_edit')
-                                                <a class="btn btn-xs btn-info" href="{{ route('frontend.photos.edit', $photo->id) }}">
-                                                    {{ trans('global.edit') }}
-                                                </a>
-                                            @endcan
-
-                                            @can('photo_delete')
-                                                <form action="{{ route('frontend.photos.destroy', $photo->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('global.delete') }}">
-                                                </form>
-                                            @endcan
-
-                                        </td>
-
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search...">
+                    </div>
+                    <div class="photo-list" id="photoList">
+                        @foreach($photos as $photo)
+                            <div class="photo-item" data-entry-id="{{ $photo->id }}">
+                                <div class="photo-thumbnail">
+                                    @foreach($photo->photo as $media)
+                                        <a href="{{ $media->getUrl() }}" target="_blank">
+                                            <img src="{{ $media->getUrl('preview') }}" alt="Photo">
+                                        </a>
+                                    @endforeach
+                                </div>
+                                <div class="photo-details">
+                                    <label>
+                                        <input type="checkbox" disabled {{ $photo->use_for_training ? 'checked' : '' }}> {{ trans('cruds.photo.fields.use_for_training') }}
+                                    </label>
+                                </div>
+                                <div class="photo-actions">
+                                    @can('photo_show')
+                                        <a class="btn btn-default btn-sm" href="{{ route('frontend.photos.show', $photo->id) }}"><i class="fas fa-eye"></i></a>
+                                    @endcan
+                                    @can('photo_edit')
+                                        <a class="btn btn-default btn-sm" href="{{ route('frontend.photos.edit', $photo->id) }}"><i class="fas fa-edit"></i></a>
+                                    @endcan
+                                    @can('photo_delete')
+                                        <form action="{{ route('frontend.photos.destroy', $photo->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-default btn-sm" value="{{ trans('global.delete') }}"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    @endcan
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 @endsection
+
+@section('styles')
+<style>
+    .photo-list { display: flex; flex-wrap: wrap; gap: 20px; }
+    .photo-item { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); padding: 15px; display: flex; flex-direction: column; align-items: center; width: 250px; }
+    .photo-thumbnail img { width: 100%; border-radius: 5px; }
+    .photo-details { margin: 10px 0; }
+    .photo-actions { display: flex; gap: 10px; }
+    .search-bar { margin-bottom: 15px; }
+    .search-bar input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+</style>
+@endsection
+
 @section('scripts')
-@parent
 <script>
-    $(function () {
-  let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
-@can('photo_delete')
-  let deleteButtonTrans = '{{ trans('global.datatables.delete') }}'
-  let deleteButton = {
-    text: deleteButtonTrans,
-    url: "{{ route('frontend.photos.massDestroy') }}",
-    className: 'btn-danger',
-    action: function (e, dt, node, config) {
-      var ids = $.map(dt.rows({ selected: true }).nodes(), function (entry) {
-          return $(entry).data('entry-id')
-      });
-
-      if (ids.length === 0) {
-        alert('{{ trans('global.datatables.zero_selected') }}')
-
-        return
-      }
-
-      if (confirm('{{ trans('global.areYouSure') }}')) {
-        $.ajax({
-          headers: {'x-csrf-token': _token},
-          method: 'POST',
-          url: config.url,
-          data: { ids: ids, _method: 'DELETE' }})
-          .done(function () { location.reload() })
-      }
-    }
-  }
-  dtButtons.push(deleteButton)
-@endcan
-
-  $.extend(true, $.fn.dataTable.defaults, {
-    orderCellsTop: true,
-    order: [[ 1, 'desc' ]],
-    pageLength: 100,
-  });
-  let table = $('.datatable-Photo:not(.ajaxTable)').DataTable({ buttons: dtButtons })
-  $('a[data-toggle="tab"]').on('shown.bs.tab click', function(e){
-      $($.fn.dataTable.tables(true)).DataTable()
-          .columns.adjust();
-  });
-  
-})
-
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+        let filter = this.value.toLowerCase();
+        let items = document.querySelectorAll(".photo-item");
+        
+        items.forEach(function(item) {
+            let text = item.innerText.toLowerCase();
+            item.style.display = text.includes(filter) ? "flex" : "none";
+        });
+    });
 </script>
 @endsection

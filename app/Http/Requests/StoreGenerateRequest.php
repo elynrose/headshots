@@ -27,6 +27,10 @@ class StoreGenerateRequest extends FormRequest
                 'min:-2147483648',
                 'max:2147483647',
             ],
+            'requestid' => [
+                'string',
+                'nullable',
+            ],
             'height' => [
                 'nullable',
                 'integer',
@@ -35,6 +39,22 @@ class StoreGenerateRequest extends FormRequest
             ],
             'status' => [
                 'string',
+                'nullable',
+            ],
+            'response_url' => [
+                'string',
+                'nullable',
+            ],
+            'status_url' => [
+                'string',
+                'nullable',
+            ],
+            'cancel_url' => [
+                'string',
+                'nullable',
+            ],
+            'queue_position' => [
+                'integer',
                 'nullable',
             ],
             'content_type' => [

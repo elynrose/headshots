@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'advanced_mode' =>          'Advanced Settings',
     'upload'                    => 'Upload',
     'actions'                        => 'Actions',
     'add'                            => 'Add',

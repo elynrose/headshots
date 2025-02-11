@@ -12,7 +12,7 @@ class CreateTrainsTable extends Migration
             $table->bigIncrements('id');
             $table->string('requestid')->nullable();
             $table->string('title');
-            $table->string('status')->nullable();
+            $table->string('status')->default('NEW')->nullable();
             $table->longText('zipped_file_url')->nullable();
             $table->longText('temporary_amz_url')->nullable();
             $table->longText('diffusers_lora_file')->nullable();

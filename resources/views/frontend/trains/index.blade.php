@@ -4,156 +4,123 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
             @can('train_create')
-                <div style="margin-bottom: 10px;" class="row">
-                    <div class="col-lg-12">
-                        <a class="btn btn-success" href="{{ route('frontend.trains.create') }}">
-                            {{ trans('global.add') }} {{ trans('cruds.train.title_singular') }}
-                        </a>
-                    </div>
+                <div class="mb-3 d-flex justify-content-end">
+                    <a class="btn btn-success" href="{{ route('frontend.trains.create') }}">
+                        {{ trans('global.add') }} {{ trans('cruds.train.title_singular') }}
+                    </a>
                 </div>
             @endcan
-            <div class="card">
-                <div class="card-header">
-                    {{ trans('cruds.train.title_singular') }} {{ trans('global.list') }}
-                </div>
-
+            
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class=" table table-bordered table-striped table-hover datatable datatable-Train">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        {{ trans('cruds.train.fields.requestid') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.title') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.status') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.diffusers_lora_file') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.config_file') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.file_size') }}
-                                    </th>
-                                    <th>
-                                        {{ trans('cruds.train.fields.error_log') }}
-                                    </th>
-                                    <th>
-                                        &nbsp;
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($trains as $key => $train)
-                                    <tr data-entry-id="{{ $train->id }}">
-                                        <td>
-                                            {{ $train->requestid ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $train->title ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $train->status ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $train->zipped_file_url ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $train->config_file ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $train->file_size ?? '' }}
-                                        </td>
-                                        <td>
-                                            {{ $train->error_log ?? '' }}
-                                        </td>
-                                        <td>
-                                            @can('train_show')
-                                                <a class="btn btn-xs btn-primary" href="{{ route('frontend.trains.show', $train->id) }}">
-                                                    {{ trans('global.view') }}
-                                                </a>
-                                            @endcan
-
-                                            @can('train_edit')
-                                                <a class="btn btn-xs btn-info" href="{{ route('frontend.trains.edit', $train->id) }}">
-                                                    {{ trans('global.edit') }}
-                                                </a>
-                                            @endcan
-
+                    <div class="input-group mb-5">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+                    </div>
+                    <div class="row" id="trainList">
+                        @foreach($trains as $train)
+                            <div class="col-md-12 mb-4">
+                             
+                                        <div class="row" data-entry-id="{{ $train->id }}">
+                                            <div class="col-md-3">{{ $train->title ?? '' }}</div>
+                                            <div class="col-md-2 waiting_{{$train->id}} @if($train->status=='IN_QUEUE' || $train->status =='IN_PROGRESS' || $train->status =='NEW') waiting @elseif($train->status=='COMPLETED'){{'completed'}} @elseif($train->status =='ERROR') error @endif" data-id="{{$train->id}}" data-status="{{$train->status}}" data-url="{{$train->status_url}}"><span class="badge badge-default">@if($train->status == 'NEW') {{'NEW'}}@elseif ($train->status == 'IN_QUEUE') {{'IN QUEUE'}}@elseif($train->status == 'IN_PROGRESS') {{'IN PROGRESS'}} @elseif($train->status == 'COMPLETED') {{'COMPLETED'}} @elseif($train->status == 'ERROR') {{'ERROR'}}  @endif</span></div>
+                                            <div class="col-md-2 diffusers_{{$train->id}}">
+                                            @if($train->status=='COMPLETED')
+                                                <a href="{{ $train->diffusers_lora_file }}" target="_blank" class="small"><i class="fas fa-cog"></i> Diffusers Lora File</a>
+                                            @else
+                                               <span class="small"> PENDING </span>
+                                            @endif
+                                            </div>
+                                            <div class="col-md-2 zipfile_{{$train->id}}">
+                                            @if($train->status=='COMPLETED')
+                                                <a href="{{ $train->zipped_file_url }}" target="_blank" class="small"><i class="fas fa-download"></i> Download Photos</a>
+                                            @else
+                                            <span class="small"> PENDING </span>
+                                            @endif
+                                            </div>
+ 
+                                            <div class="col-md-2 small">{{ $train->created_at ?? '' }}</div>
+                                            <div class="col-md-1">
                                             @can('train_delete')
-                                                <form action="{{ route('frontend.trains.destroy', $train->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('global.delete') }}">
-                                                </form>
+                                                <a href="{{ $train->cancel_url }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" class="btn btn-danger btn-xs pull-right"><i class="fas fa-ban"></i></a>
+                                                
                                             @endcan
-
-                                        </td>
-
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                            </div>
+                                            
+                                        </div>
+                             
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 @endsection
+
+@section('styles')
+<style>
+    .card { border-radius: 10px; }
+    .btn-sm { font-size: 0.875rem; }
+</style>
+@endsection
+
 @section('scripts')
-@parent
 <script>
-    $(function () {
-  let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
-@can('train_delete')
-  let deleteButtonTrans = '{{ trans('global.datatables.delete') }}'
-  let deleteButton = {
-    text: deleteButtonTrans,
-    url: "{{ route('frontend.trains.massDestroy') }}",
-    className: 'btn-danger',
-    action: function (e, dt, node, config) {
-      var ids = $.map(dt.rows({ selected: true }).nodes(), function (entry) {
-          return $(entry).data('entry-id')
-      });
+$(document).ready(function() {
+    function sendAjaxRequests() {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-      if (ids.length === 0) {
-        alert('{{ trans('global.datatables.zero_selected') }}')
+        $('.waiting').each(function() {
+            let id = $(this).data('id');
+            let url = $(this).data('url');
 
-        return
-      }
-
-      if (confirm('{{ trans('global.areYouSure') }}')) {
-        $.ajax({
-          headers: {'x-csrf-token': _token},
-          method: 'POST',
-          url: config.url,
-          data: { ids: ids, _method: 'DELETE' }})
-          .done(function () { location.reload() })
-      }
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: { id: id },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status == 'COMPLETED') {
+                        let waitingElement = $('.waiting[data-id="' + id + '"]');
+                        waitingElement.html('<span class="small badge badge-default">' + response.status + '</span>');
+                        waitingElement.removeClass('IN_QUEUE waiting').addClass('COMPLETED');
+                        $('.diffusers_' + id).html('<a href="' + response.diffusers_lora_file + '" target="_blank" class="small"><i class="fas fa-cog"></i> Diffusers Lora File</a>');
+                        $('.zipfile_' + id).html('<a href="' + response.zipped_file_url + '" target="_blank" class="small"><i class="fas fa-download"></i> Download Photos</a>');
+                    } else if (response.status == 'IN_PROGRESS') {
+                        $('.waiting[data-id="' + id + '"]').html('<div class="spinner-border text-secondary" role="status"><span class="sr-only">' + response.status + '</span></div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    let waitingElement = $('.waiting[data-id="' + id + '"]');
+                    waitingElement.html('<span class="small badge badge-default">FAILED</span>');
+                    waitingElement.removeClass('IN_QUEUE waiting').addClass('FAILED');
+                    alert('An unexpected error occurred: Ckeck your API key and credits.');
+                }
+            });
+        });
     }
-  }
-  dtButtons.push(deleteButton)
-@endcan
 
-  $.extend(true, $.fn.dataTable.defaults, {
-    orderCellsTop: true,
-    order: [[ 1, 'desc' ]],
-    pageLength: 100,
-  });
-  let table = $('.datatable-Train:not(.ajaxTable)').DataTable({ buttons: dtButtons })
-  $('a[data-toggle="tab"]').on('shown.bs.tab click', function(e){
-      $($.fn.dataTable.tables(true)).DataTable()
-          .columns.adjust();
-  });
-  
-})
+    // Run the function immediately
+    sendAjaxRequests();
 
+    // Set interval to run the function every 15 seconds
+    setInterval(sendAjaxRequests, 15000);
+});
+
+
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+        let filter = this.value.toLowerCase();
+        let items = document.querySelectorAll(".col-md-4");
+        
+        items.forEach(function(item) {
+            let text = item.innerText.toLowerCase();
+            item.style.display = text.includes(filter) ? "block" : "none";
+        });
+    });
 </script>
 @endsection

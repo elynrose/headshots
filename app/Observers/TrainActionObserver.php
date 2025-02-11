@@ -28,7 +28,7 @@ class TrainActionObserver
     {
             
        dispatch(new ProcessTrainPhotos($model));  
-       $model->update(['status' => 'Processing']);
+       //$model->update(['status' => 'Processing']);
 
     }
 

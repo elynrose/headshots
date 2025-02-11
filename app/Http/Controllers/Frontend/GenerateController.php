@@ -12,9 +12,21 @@ use App\Models\User;
 use Gate;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use GuzzleHttp\Client;
+use Exception;
+
 
 class GenerateController extends Controller
 {
+    private $client;
+    private $apiKey;
+
+    public function __construct()
+    {
+        $this->client = new Client();
+        $this->apiKey = env('FAL_AI_API_KEY');
+    }
+
     public function index()
     {
         abort_if(Gate::denies('generate_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -90,4 +102,78 @@ class GenerateController extends Controller
 
         return response(null, Response::HTTP_NO_CONTENT);
     }
+
+
+    public function getResults($generate){
+
+        try{
+            // Make a GET request to retrieve job results
+        $final_response = $this->client->get($generate->response_url, [
+            'headers' => [
+                'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
+                'Content-Type' => 'application/json',
+            ],
+        ]);  
+        $final_result = json_decode($final_response->getBody(), true);
+
+        // Update the generate model with the final results
+        $generate->status = "COMPLETED";
+        $generate->image_url = $final_result['images'][0]['url'];
+        $generate->save();
+
+        //add status= completed to the final result array
+        $final_result['status'] = "COMPLETED";
+
+        return $final_result;
+
+
+
+       // return $final_result;
+        
+        } catch (Exception $e) {
+            //if error 401
+            if($e->getCode() == 401){
+                $generate->status = "ERROR";
+                $generate->save();
+               
+                \Log::error("Failed to get job status: " . $e->getMessage());
+            }
+            \Log::error("Failed to get job status: " . $e->getMessage());
+        }
+
+        }
+
+
+    public function status(Request $request){
+        
+        $generate = Generate::find($request->id);
+        $client = new Client();
+        try {
+            // Make a GET request to check job status
+            $response = $client->post($generate->status_url, [
+                'headers' => [
+                    'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ],
+            ]);            
+            // Return decoded response
+            $responseBody = json_decode($response->getBody(), true);
+      
+             if($responseBody['status'] == "NEW" || $responseBody['status'] == "IN_QUEUE" || $responseBody['status'] == "PROCESSING"){
+                
+                $result = $this->getResults($generate);
+
+                return $result;
+
+             } else {
+                
+                $generate->status = $responseBody['status'];
+                $generate->save();
+             }
+           
+        } catch (Exception $e) {
+        
+        }
+    }
+
 }
