@@ -52,15 +52,19 @@
                                                 @if($generate->fal  && $generate->fal->model_type =='image')
                                                @php  $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
                                                 <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id ]) }}">
-                                                <i class="fas fa-video"></i> {{ _('Generate Video') }}
-                                                    </a>
+                                                <i class="fas fa-video"></i> {{ _('Generate Video') }} </a>
+                                                    <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+
                                                 @elseif($generate->fal  && $generate->fal->model_type =='video')
                                                 @php  $vid = App\Models\Fal::where('model_type', 'audio')->first(); @endphp
 
                                                 <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id ]) }}">
                                                    <i class="fas fa-music"></i> {{ _('Add Audio') }}
                                                     </a>
+                                                    <a href="{{ $generate->video_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+
                                                 @endif
+
                                                 <p> 
 
                                                <span class="small text-muted"> <strong>{{ trans('cruds.train.fields.created_at') }}:</strong> {{ $generate->created_at->diffForHumans() ?? '' }}<br>

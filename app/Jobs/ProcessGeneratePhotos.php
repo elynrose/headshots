@@ -50,7 +50,13 @@ class ProcessGeneratePhotos implements ShouldQueue
         // If a valid response is returned, update the Generate model accordingly
         if ($responseBody) {
             // Set the 'parent' field (if applicable) and update model attributes
-            $responseBody['parent'] = $this->model->id ?? null;
+            
+            //If model id exists then update parent with the model id
+            if($this->model->fal->model_type === 'audio' || $this->model->fal->model_type === 'video'){
+                $this->model->update([
+                    'parent'       => $this->model->id,
+                ]);
+            }
 
             $this->model->update([
                 'status'       => $responseBody['status'] ?? $this->model->status,
@@ -114,7 +120,14 @@ class ProcessGeneratePhotos implements ShouldQueue
                 'prompt'    => $generate->prompt ?? null,
                 'image_url' => $generate->image_url,
             ];
-        } else {
+        } 
+        elseif($fal->model_type === 'audio'){
+            $payload = [
+                'video_url'    => $generate->video_url ?? null,
+                'audio_url'    => $generate->audio_url ?? null,
+            ];
+        }
+        else {
             Log::warning("Unsupported Fal model type: {$fal->model_type}");
             return null;
         }
