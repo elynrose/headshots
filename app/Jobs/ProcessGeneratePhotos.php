@@ -49,7 +49,9 @@ class ProcessGeneratePhotos implements ShouldQueue
 
         // If a valid response is returned, update the Generate model accordingly
         if ($responseBody) {
+            
             // Set the 'parent' field (if applicable) and update model attributes
+            \Log::info($this->model->fal->model_type);
             
             //If model id exists then update parent with the model id
             if($this->model->fal->model_type === 'audio' || $this->model->fal->model_type === 'video'){
@@ -64,7 +66,8 @@ class ProcessGeneratePhotos implements ShouldQueue
                 'response_url' => $responseBody['response_url'] ?? null,
                 'status_url'   => $responseBody['status_url'] ?? null,
                 'cancel_url'   => $responseBody['cancel_url'] ?? null,
-                'parent'       => $responseBody['parent'] ?? null,
+                'queue_position' => $responseBody['queue_position'] ?? null,
+
             ]);
         }
     }

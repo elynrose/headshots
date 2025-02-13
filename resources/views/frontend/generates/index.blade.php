@@ -6,20 +6,14 @@
             @can('generate_create')
                 <div style="margin-bottom: 10px;" class="row">
                     <div class="col-lg-12">
-                        <form action="{{ route('frontend.generates.create') }}" method="GET">
                             <div class="form-group  row">
+                          
                                 <div class="col-lg-4">
-                                    <select name="model_id" id="model_id" class="form-control select">
-                                        @foreach($fals as $fal)
-                                            <option value="{{ $fal->id }}">{{ $fal->title }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-lg-4">
-                                    <button class="btn btn-primary" type="submit">Generate</button>
+                                    <a class="btn btn-primary" href="{{ route('frontend.generates.create', ['model_id'=>2])}}">Generate</a>                                 <a class="btn btn-primary" href="{{ route('frontend.trains.create')}}">Train</a>
+
                                 </div>
                                 </div>
-                        </form>
+                            </div>
                     </div>
                 </div>
             @endcan
@@ -117,11 +111,11 @@ if ($('.waiting').length > 0) {
                     if (response.status === 'COMPLETED') {
                         $('.waiting.generate_' + generateId).removeClass('waiting');
                         $('.waiting.generate_' + generateId).hide()
-                        if (response.video_url && response.type=='video') {
+                        if (response.type=='video') {
                             $('.video_' + generateId).attr('src', response.video_url);
                             $('.waiting.generate_' + generateId).fadeIn()
                         }
-                        if (response.images_url && response.type=='image') {
+                        if (response.type=='image') {
                         $('.waiting.generate_' + generateId).hide()
                         $('.image_' + generateId).attr('src', response.image_url);
                         $('.waiting.generate_' + generateId).fadeIn()

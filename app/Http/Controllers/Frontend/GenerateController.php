@@ -191,8 +191,12 @@ class GenerateController extends Controller
 
                 return $result;
 
-             } else {
-                
+             } elseif($responseBody['status'] == "COMPLETED"){
+                $result = $this->getResults($generate);
+                return $result;
+
+             }
+              else {
                 $generate->status = $responseBody['status'];
                 $generate->save();
              }
