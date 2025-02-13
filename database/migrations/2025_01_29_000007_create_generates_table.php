@@ -16,6 +16,7 @@ class CreateGeneratesTable extends Migration
             $table->string('status')->nullable();
             $table->string('requestid')->nullable();
             $table->longText('image_url')->nullable();
+            $table->longText('video_url')->nullable();
             $table->longText('response_url')->nullable();
             $table->longText('cancel_url')->nullable();
             $table->longText('status_url')->nullable();
@@ -23,6 +24,7 @@ class CreateGeneratesTable extends Migration
             $table->string('content_type')->nullable();
             $table->string('inference')->nullable();
             $table->string('seed')->nullable();
+            $table->integer('parent')->nullable();
             $table->integer('credit')->nullable();
             $table->timestamps();
             $table->softDeletes();

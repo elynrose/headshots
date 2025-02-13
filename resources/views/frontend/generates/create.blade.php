@@ -23,6 +23,8 @@
                             @endif
                             <span class="help-block small text-muted">{{ trans('cruds.generate.fields.prompt_helper') }}</span>
                         </div>
+                        @if($fals->model_type=='image')
+
                         <div class="form-group">
                             <label class="required" for="train_id">{{ trans('cruds.generate.fields.train') }}</label>
                             <select class="form-control select" name="train_id" id="train_id" required>
@@ -37,6 +39,21 @@
                             @endif
                             <span class="help-block small text-muted">{{ trans('cruds.generate.fields.train_helper') }}</span>
                         </div>
+                        @endif
+                   
+                         <!-- Existing Images selection -->
+                         @if($fals->model_type=='video')
+                        @if(isset($existingImages))
+                        <div class="form-group">
+                            <div id="image-preview" class="mt-3">
+                                <input type="hidden" name="image_url" id="image_url" value="{{ $existingImages->image_url }}">
+                                <img src="{{ $existingImages->image_url }}" alt="Selected Image" class="img-thumbnail" style="width:100%; display:block;">
+                            </div>
+
+                   
+                        </div>
+                        @endif
+                        @endif
                   
                         <div class="form-group">
                             <a href="#advanced" class="btn btn-link" data-toggle="collapse">{{ trans('global.advanced_mode') }}</a>
@@ -110,11 +127,15 @@
                                 <span class="help-block small text-muted">{{ trans('cruds.generate.fields.seed_helper') }}</span>
                             </div>
                         </div>
-                     
+                    
+                       
+                        
                         <div class="form-group">
-                        <input class="form-control" type="hidden" name="credit" id="credit" value="{{ old('credit', '1') }}" step="1">
-                        <input type="hidden" name="status" id="status" value="NEW">
-                        <input type="hidden" name="user_id" id="user_id" value="{{ auth()->id() }}">    
+                            <input class="form-control" type="hidden" name="credit" id="credit" value="{{ old('credit', '1') }}" step="1">
+                            <input type="hidden" name="status" id="status" value="NEW">
+                            <input type="hidden" name="user_id" id="user_id" value="{{ auth()->id() }}"> 
+                            <input type="hidden" name="fal_model_id" id="model_id" value="@if($fals){{ $fals->id }}@endif">  
+                            
                             <button class="btn btn-danger" type="submit">
                                 {{ trans('global.save') }}
                             </button>

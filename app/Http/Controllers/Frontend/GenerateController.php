@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use GuzzleHttp\Client;
 use Exception;
+use App\Models\Fal;
+use App\Models\Photo;
 
 
 class GenerateController extends Controller
@@ -31,20 +33,28 @@ class GenerateController extends Controller
     {
         abort_if(Gate::denies('generate_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $generates = Generate::with(['train', 'user'])->get();
+        $generates = Generate::with(['train', 'user'])->orderBy('id', 'desc')->paginate(9);
+        $fals = Fal::get();
 
-        return view('frontend.generates.index', compact('generates'));
+        return view('frontend.generates.index', compact('generates', 'fals'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         abort_if(Gate::denies('generate_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $trains = Train::pluck('title', 'id')->prepend(trans('global.pleaseSelect'), '');
+        $fals = Fal::find(request('model_id'));
+        
+        if($request->image_id){
+        $existingImages = Generate::where('id', $request->image_id)->first();
+        }  else {
+            $existingImages = null;
+        }
 
         $users = User::pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
 
-        return view('frontend.generates.create', compact('trains', 'users'));
+        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages'));
     }
 
     public function store(StoreGenerateRequest $request)
@@ -106,6 +116,8 @@ class GenerateController extends Controller
 
     public function getResults($generate){
 
+        $fal = Fal::where('id', $generate->fal_model_id)->first();
+
         try{
             // Make a GET request to retrieve job results
         $final_response = $this->client->get($generate->response_url, [
@@ -114,15 +126,29 @@ class GenerateController extends Controller
                 'Content-Type' => 'application/json',
             ],
         ]);  
+
         $final_result = json_decode($final_response->getBody(), true);
 
         // Update the generate model with the final results
         $generate->status = "COMPLETED";
-        $generate->image_url = $final_result['images'][0]['url'];
+
+
+        if($fal->model_type == 'image'){
+            $generate->image_url = $final_result['images'][0]['url'];
+            $final_result['image_url'] = $final_result['images'][0]['url'];
+          //  $generate->file_size = $final_result['images'][0]['file_size'];
+
+        }elseif($fal->model_type == 'video'){
+            $generate->video_url = $final_result['video']['url'];
+            $final_result['video_url'] = $final_result['video']['url'];
+           // $generate->file_size = $final_result['video']['file_size'];
+        }
+
         $generate->save();
 
         //add status= completed to the final result array
         $final_result['status'] = "COMPLETED";
+        $final_result['type'] = $fal->model_type;
 
         return $final_result;
 

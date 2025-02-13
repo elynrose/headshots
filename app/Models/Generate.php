@@ -21,6 +21,7 @@ class Generate extends Model
 
     protected $fillable = [
         'prompt',
+        'fal_model_id',
         'train_id',
         'width',
         'height',
@@ -31,10 +32,12 @@ class Generate extends Model
         'queue_position',
         'requestid',
         'image_url',
+        'video_url',
         'content_type',
         'inference',
         'seed',
         'credit',
+        'parent',
         'user_id',
         'created_at',
         'updated_at',
@@ -60,5 +63,10 @@ class Generate extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function fal()
+    {
+        return $this->belongsTo(Fal::class, 'fal_model_id');
     }
 }

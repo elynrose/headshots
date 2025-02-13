@@ -18,8 +18,22 @@ class StoreGenerateRequest extends FormRequest
     {
         return [
             'train_id' => [
-                'required',
                 'integer',
+            ],
+            'prompt' => [
+                'string',
+                'required',
+            ],
+            'fal_model_id' => [
+                'int',
+            ],
+            'image_url' => [
+                'string',
+                'nullable',
+            ],
+            'video_url' => [
+                'string',
+                'nullable',
             ],
             'width' => [
                 'nullable',
@@ -74,6 +88,10 @@ class StoreGenerateRequest extends FormRequest
                 'integer',
                 'min:-2147483648',
                 'max:2147483647',
+            ],
+            'parent' => [
+                'integer',
+                'nullable',
             ],
             'user_id' => [
                 'required',

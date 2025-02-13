@@ -6,39 +6,72 @@
             @can('generate_create')
                 <div style="margin-bottom: 10px;" class="row">
                     <div class="col-lg-12">
-                        <a class="btn btn-success" href="{{ route('frontend.generates.create') }}">
-                            {{ trans('global.add') }} {{ trans('cruds.generate.title_singular') }}
-                        </a>
+                        <form action="{{ route('frontend.generates.create') }}" method="GET">
+                            <div class="form-group  row">
+                                <div class="col-lg-4">
+                                    <select name="model_id" id="model_id" class="form-control select">
+                                        @foreach($fals as $fal)
+                                            <option value="{{ $fal->id }}">{{ $fal->title }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-4">
+                                    <button class="btn btn-primary" type="submit">Generate</button>
+                                </div>
+                                </div>
+                        </form>
                     </div>
                 </div>
             @endcan
-            <div class="card">
+            <div>
            
-                <div class="card-body">
+                <div>
                     <div class="table-responsive">
                         <div class="row">
                             @foreach($generates as $key => $generate)
                                 <div class="col-md-4 @if($generate->status=='NEW' || $generate->status=='IN_QUEUE' || $generate->status=='IN_PROGRESS') waiting @elseif($generate->status=='COMPLETED' || $generate->status=='ERROR') @endif generate_{{$generate->id}}" data-id="{{ $generate->id }}">
-                                    <div class="card mb-3">
+                                    <div class="card shadow-sm mb-3">
                                         <div class="card-body">
                                          <div class="row">
                                             <div class="col-md-12">
-                                              <a href="{{ $generate->image_url ?? '' }}"> 
-                                                <img src="{{ $generate->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$generate->id}}" alt="{{$generate->title}}">
+                                               @if($generate->fal  && $generate->fal->model_type =='video')
+                                               <span class="badge badge-success" style="position:absolute; top:0;left:10px;z-index:10;"> <i class="fas fa-video"></i></span>
+                                                <video src="{{$generate->video_url ?? asset('/images/loading.mp4')}}" controls loop autoplay width="100%" height="225" class="video_{{ $generate->id }}"></video>
+                                               @elseif($generate->fal  && $generate->fal->model_type =='image')
+                                               <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i></span>
+
+                                              <a href="{{ $generate->image_url ?? '' }}" style="width:100%; height:225px; display:block; overflow:hidden;"> 
+                                                <img src="{{ $generate->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$generate->id}} d-block mx-auto" alt="{{$generate->title}}" loading="lazy">
                                              </a> 
+                                                  @else
+                                                    {{ _('Model Undefined') }}
+                                                  @endif
                                             </div>
                                             <div class="col-md-12">
-                                            <p class="card-text">
-                                                <p> <strong>{{ $generate->train->title ?? '' }}</strong><br>
-                                               <span class="small text-muted"> <strong>{{ trans('cruds.train.fields.file_size') }}:</strong> {{ $generate->train->file_size ?? '' }}<br>
-                                                <strong>{{ trans('cruds.generate.fields.status') }}:</strong> <span id="status_{{$generate->id}}">{{ $generate->status ?? '' }}</span><br>
+                                            <p class="py-2">
+                                                @if($generate->fal  && $generate->fal->model_type =='image')
+                                               @php  $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
+                                                <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id ]) }}">
+                                                <i class="fas fa-video"></i> {{ _('Generate Video') }}
+                                                    </a>
+                                                @elseif($generate->fal  && $generate->fal->model_type =='video')
+                                                @php  $vid = App\Models\Fal::where('model_type', 'audio')->first(); @endphp
+
+                                                <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id ]) }}">
+                                                   <i class="fas fa-music"></i> {{ _('Add Audio') }}
+                                                    </a>
+                                                @endif
+                                                <p> 
+
+                                               <span class="small text-muted"> <strong>{{ trans('cruds.train.fields.created_at') }}:</strong> {{ $generate->created_at->diffForHumans() ?? '' }}<br>
+                                               <span  class="badge badge-info"> <span id="status_{{$generate->id}}">{{ $generate->status ?? '' }}</span></span><br>
                                                 <strong>{{ trans('cruds.generate.fields.credit') }}:</strong> {{ $generate->credit ?? '' }}</span>
                                             </p>
                                             @can('generate_delete')
                                                 <form action="{{ route('frontend.generates.destroy', $generate->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
                                                     <input type="hidden" name="_method" value="DELETE">
                                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <button type="submit" class="btn btn-danger btn-xs" value="{{ trans('global.delete') }}"><i class="fas fa-ban"></i></button>
+                                                    <button type="submit" class="btn btn-danger btn-xs" value="{{ trans('global.delete') }}"><i class="fas fa-trash"></i></button>
                                                 </form>
                                             @endcan
 
@@ -51,9 +84,13 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
+                <div class="d-flex justify-content-center">
+            {{ $generates->links('pagination::bootstrap-4') }}
         </div>
+            </div>
+         
+        </div>
+     
     </div>
 </div>
 @endsection
@@ -75,11 +112,22 @@ if ($('.waiting').length > 0) {
                     console.log(response);
                     if (response.status === 'COMPLETED') {
                         $('.waiting.generate_' + generateId).removeClass('waiting');
-                        $('.image_' + generateId).attr('src', response.images[0].url);
+                        $('.waiting.generate_' + generateId).hide()
+                        if (response.video_url && response.type=='video') {
+                            $('.video_' + generateId).attr('src', response.video_url);
+                            $('.waiting.generate_' + generateId).fadeIn()
+                        }
+                        if (response.images_url && response.type=='image') {
+                        $('.waiting.generate_' + generateId).hide()
+                        $('.image_' + generateId).attr('src', response.image_url);
+                        $('.waiting.generate_' + generateId).fadeIn()
+                        }
                         $('#status_' + generateId).text('COMPLETED');
                     } else if (response.status === 'ERROR') {
                         $('.waiting.generate_' + generateId).removeClass('waiting').addClass('error');
                         $('#status_' + generateId).text('ERROR');
+                    } else if(response.status === 'IN_PROGRESS' || response.status === 'IN_QUEUE' || response.status === 'NEW') {
+                        $('#status_' + generateId).text('IN_PROGRESS');
                     }
                 },
                 error: function() {
