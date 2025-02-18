@@ -2,9 +2,9 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-12">
+        <div class="col-md-6">
 
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header">
                     {{ trans('global.create') }} {{ trans('cruds.photo.title_singular') }}
                 </div>

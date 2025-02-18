@@ -126,8 +126,8 @@ class ProcessGeneratePhotos implements ShouldQueue
         } 
         elseif($fal->model_type === 'audio'){
             $payload = [
-                'video_url'    => $generate->video_url ?? null,
-                'audio_url'    => $generate->audio_url ?? null,
+                    'audio_url' => $generate->audio_url,
+                    'video_url'    => $generate->video_url ?? null,
             ];
         }
         else {

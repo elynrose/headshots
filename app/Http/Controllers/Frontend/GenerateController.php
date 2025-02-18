@@ -16,6 +16,7 @@ use GuzzleHttp\Client;
 use Exception;
 use App\Models\Fal;
 use App\Models\Photo;
+use Illuminate\Support\Facades\Auth;
 
 
 class GenerateController extends Controller
@@ -33,11 +34,35 @@ class GenerateController extends Controller
     {
         abort_if(Gate::denies('generate_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $generates = Generate::with(['train', 'user'])->orderBy('id', 'desc')->paginate(9);
+        $generates = Generate::with(['train', 'user'])
+        ->where('parent', null)
+        ->orderBy('id', 'desc')->paginate(9);
+
         $fals = Fal::get();
 
         return view('frontend.generates.index', compact('generates', 'fals'));
     }
+
+    public function build(Request $request)
+    {
+        abort_if(Gate::denies('generate_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $generates = Generate::with(['train', 'user'])
+        ->where('id', $request->generate_id)
+        ->where('parent', null)
+        ->get();
+
+        $childs = Generate::with(['train', 'user'])
+        ->where('parent', $request->generate_id)
+        ->orderBy('id', 'desc')
+        ->get();
+
+
+        $fals = Fal::get();
+
+        return view('frontend.generates.build', compact('generates', 'fals', 'childs'));
+    }
+
 
     public function create(Request $request)
     {
@@ -54,12 +79,54 @@ class GenerateController extends Controller
 
         $users = User::pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
 
-        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages'));
+        return view('frontend.generates.build', compact('trains', 'users', 'fals', 'existingImages'));
     }
 
     public function store(StoreGenerateRequest $request)
     {
-        $generate = Generate::create($request->all());
+        //get the audio file
+       /* if($request->has('audio_mp3')){
+            $audio_blob = $request->input('audio_mp3');
+            $audio_file_name = time() . '.mp3';
+            $audio_file_path = 'audio/' . $audio_file_name;
+            \Storage::disk('s3')->put($audio_file_path, base64_decode($audio_blob), 'public');
+            $audio_url = \Storage::disk('s3')->url($audio_file_path);
+        } else {
+            $audio_file_path = null;
+        }*/
+
+        if($request->file('audio_mp3')){
+            //save to s3 storage and get url
+            $audio_file = $request->file('audio_mp3');
+            $audio_file_name = time() . '.' . $audio_file->getClientOriginalExtension();
+            $audio_file_path = 'audio/' . $audio_file_name;
+            \Storage::disk('s3')->put($audio_file_path, file_get_contents($audio_file), 'public');
+            $audio_url = \Storage::disk('s3')->url($audio_file_path);
+
+        }
+
+        $generate = Generate::create(
+            [
+                'prompt' => $request->prompt ?? null,
+                'fal_model_id' => $request->fal_model_id,
+                'train_id' => $request->train_id,
+                'width' => $request->width ?? null,
+                'height' => $request->height ?? null,
+                'status' => 'NEW',
+                'content_type' => 'image' ?? null,
+                'response_url' => $request->response_url,
+                'status_url' => $request->status_url,
+                'cancel_url' => $request->cancel_url,
+                'queue_position' => $request->queue_position ?? null,
+                'requestid' => $request->requestid ?? null,
+                'image_url' => $request->image_url ?? null,
+                'video_url' => $request->video_url ?? null,
+                'audio_url' => $audio_url ?? null,
+                'parent' => $request->parent ?? null,
+                'inference' => $request->inference ?? null,
+                'user_id' => Auth::id(),
+            ]
+        );
 
         return redirect()->route('frontend.generates.index');
     }
@@ -138,7 +205,7 @@ class GenerateController extends Controller
             $final_result['image_url'] = $final_result['images'][0]['url'];
           //  $generate->file_size = $final_result['images'][0]['file_size'];
 
-        }elseif($fal->model_type == 'video'){
+        }elseif($fal->model_type == 'video' || $fal->model_type == 'audio'){
             $generate->video_url = $final_result['video']['url'];
             $final_result['video_url'] = $final_result['video']['url'];
            // $generate->file_size = $final_result['video']['file_size'];
@@ -148,7 +215,11 @@ class GenerateController extends Controller
 
         //add status= completed to the final result array
         $final_result['status'] = "COMPLETED";
+        if($final_result['type']=='audio'){
+            $final_result['type'] = 'multimedia';
+        } else{
         $final_result['type'] = $fal->model_type;
+        }
 
         return $final_result;
 

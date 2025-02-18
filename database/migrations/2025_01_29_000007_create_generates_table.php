@@ -15,6 +15,7 @@ class CreateGeneratesTable extends Migration
             $table->integer('height')->nullable();
             $table->string('status')->nullable();
             $table->string('requestid')->nullable();
+            $table->string('audio_url')->nullable();
             $table->longText('image_url')->nullable();
             $table->longText('video_url')->nullable();
             $table->longText('response_url')->nullable();

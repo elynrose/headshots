@@ -22,10 +22,13 @@ class StoreGenerateRequest extends FormRequest
             ],
             'prompt' => [
                 'string',
-                'required',
-            ],
+                'nullable',],
             'fal_model_id' => [
                 'int',
+            ],
+            'audio_url' => [
+                'string',
+                'nullable',
             ],
             'image_url' => [
                 'string',

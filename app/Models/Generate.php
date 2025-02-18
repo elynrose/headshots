@@ -23,6 +23,7 @@ class Generate extends Model
         'prompt',
         'fal_model_id',
         'train_id',
+        'audio_url',
         'width',
         'height',
         'status',

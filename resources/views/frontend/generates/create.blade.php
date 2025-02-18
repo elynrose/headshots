@@ -13,6 +13,8 @@
                     <form method="POST" action="{{ route("frontend.generates.store") }}" enctype="multipart/form-data">
                         @method('POST')
                         @csrf
+
+                        @if($fals->model_type=='image' || $fals->model_type=='video')
                         <div class="form-group">
                             <label for="prompt">{{ trans('cruds.generate.fields.prompt') }}</label>
                             <textarea class="form-control" name="prompt" id="prompt">{{ old('prompt') }}</textarea>
@@ -23,6 +25,30 @@
                             @endif
                             <span class="help-block small text-muted">{{ trans('cruds.generate.fields.prompt_helper') }}</span>
                         </div>
+                        @elseif($fals->model_type=='audio')
+                        
+                        <!-- Audio recording section 
+                        <div class="form-group">
+                            <label>Record your voice:</label>
+                            <div class="mb-2">
+                                <button type="button" id="recordBtn" class="btn btn-primary">Record</button>
+                                <button type="button" id="pauseBtn" class="btn btn-secondary" disabled>Pause</button>
+                                <button type="button" id="stopBtn" class="btn btn-danger" disabled>Stop</button>
+                                <button type="button" id="playBtn" class="btn btn-info" disabled>Play</button>
+                            </div>
+                            <audio id="audioPlayback" controls style="display:none;"></audio>
+                             <input type="hidden" name="audio_mp3" id="audio_mp3">
+                        </div>-->
+
+                        <div class="form-group">
+                        <input type="hidden" name="video_url" id="video_url" value="{{ $existingImages->video_url }}">
+                            <label for="audio_mp3" class="required">Select Audio File</label>
+                        <input type="file" name="audio_mp3" id="audio_mp3">
+                        </div>
+                        @endif
+
+
+                        
                         @if($fals->model_type=='image')
 
                         <div class="form-group">
@@ -44,13 +70,30 @@
                          <!-- Existing Images selection -->
                          @if($fals->model_type=='video')
                         @if(isset($existingImages))
+                        @if(Request::get('parent_id'))
+                        <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
+                        @endif
                         <div class="form-group">
                             <div id="image-preview" class="mt-3">
                                 <input type="hidden" name="image_url" id="image_url" value="{{ $existingImages->image_url }}">
                                 <img src="{{ $existingImages->image_url }}" alt="Selected Image" class="img-thumbnail" style="width:100%; display:block;">
                             </div>
-
-                   
+                        </div>
+                        @endif
+                        
+                        @elseif($fals->model_type=='audio')
+                        @if(Request::get('parent_id'))
+                        <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
+                        @endif
+                        @if(isset($existingImages))
+                        <div class="form-group
+                        ">
+                            <div id="video-preview" class="mt-3">
+                                <video width="100%" controls>
+                                    <source src="{{ $existingImages->video_url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
                         </div>
                         @endif
                         @endif
@@ -140,6 +183,8 @@
                                 {{ trans('global.save') }}
                             </button>
                         </div>
+
+                        
                     </form>
                 </div>
             </div>
@@ -150,4 +195,148 @@
     </div>
     
 </div>
+@endsection
+
+@section('scripts')
+@parent
+<!-- Include lamejs from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let audioContext;
+    let microphoneStream;
+    let scriptProcessor;
+    let audioData = [];
+    let isRecording = false;
+    let mediaStream;
+
+    const recordBtn = document.getElementById('recordBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const playBtn = document.getElementById('playBtn');
+    const audioPlayback = document.getElementById('audioPlayback');
+    const hiddenAudioInput = document.getElementById('audio_mp3');
+
+    recordBtn.addEventListener('click', startRecording);
+    pauseBtn.addEventListener('click', pauseRecording);
+    stopBtn.addEventListener('click', stopRecording);
+    playBtn.addEventListener('click', playRecording);
+
+    async function startRecording() {
+        if (!navigator.mediaDevices.getUserMedia) {
+            alert('Your browser does not support audio recording.');
+            return;
+        }
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphoneStream = audioContext.createMediaStreamSource(mediaStream);
+            scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+            microphoneStream.connect(scriptProcessor);
+            scriptProcessor.connect(audioContext.destination);
+            scriptProcessor.onaudioprocess = function(e) {
+                if (!isRecording) return;
+                let channelData = e.inputBuffer.getChannelData(0);
+                // Store a copy of the data
+                audioData.push(new Float32Array(channelData));
+            };
+            isRecording = true;
+            recordBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stopBtn.disabled = false;
+            playBtn.disabled = true;
+            pauseBtn.textContent = 'Pause';
+            audioData = [];
+        } catch (err) {
+            console.error('Error accessing microphone: ', err);
+        }
+    }
+    
+    function pauseRecording() {
+        if (isRecording) {
+            // Pause recording: stop saving data
+            isRecording = false;
+            pauseBtn.textContent = 'Resume';
+        } else {
+            // Resume recording
+            isRecording = true;
+            pauseBtn.textContent = 'Pause';
+        }
+    }
+    
+    function stopRecording() {
+        isRecording = false;
+        recordBtn.disabled = false;
+        pauseBtn.disabled = true;
+        stopBtn.disabled = true;
+        playBtn.disabled = false;
+        // Disconnect the nodes and stop tracks
+        if (scriptProcessor) {
+            scriptProcessor.disconnect();
+        }
+        if (microphoneStream) {
+            microphoneStream.disconnect();
+        }
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+        // Merge all recorded data into one buffer
+        let bufferLength = audioData.reduce((sum, arr) => sum + arr.length, 0);
+        let mergedBuffer = new Float32Array(bufferLength);
+        let offset = 0;
+        for (let i = 0; i < audioData.length; i++) {
+            mergedBuffer.set(audioData[i], offset);
+            offset += audioData[i].length;
+        }
+        // Convert Float32 samples to 16-bit PCM
+        let pcmData = floatTo16BitPCM(mergedBuffer);
+        // Encode PCM data to MP3 using lamejs
+        let mp3Blob = encodeMP3(pcmData, audioContext.sampleRate);
+        let url = URL.createObjectURL(mp3Blob);
+        audioPlayback.src = url;
+        audioPlayback.style.display = 'block';
+        
+        // Convert blob to Base64 for the hidden input
+        let reader = new FileReader();
+        reader.onloadend = function() {
+            hiddenAudioInput.value = reader.result;
+        };
+        reader.readAsDataURL(mp3Blob);
+    }
+    
+    function playRecording() {
+        audioPlayback.play();
+    }
+    
+    // Convert Float32Array to Int16Array (PCM 16-bit)
+    function floatTo16BitPCM(buffer) {
+        let l = buffer.length;
+        let buf = new Int16Array(l);
+        for (let i = 0; i < l; i++) {
+            let s = Math.max(-1, Math.min(1, buffer[i]));
+            buf[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+        return buf;
+    }
+
+    // Encode PCM data to MP3 using lamejs
+    function encodeMP3(pcmData, sampleRate) {
+        const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // 1 channel, sample rate, 128 kbps
+        const chunkSize = 1152;
+        let mp3Data = [];
+        for (let i = 0; i < pcmData.length; i += chunkSize) {
+            let chunk = pcmData.subarray(i, i + chunkSize);
+            let mp3buf = mp3Encoder.encodeBuffer(chunk);
+            if (mp3buf.length > 0) {
+                mp3Data.push(new Int8Array(mp3buf));
+            }
+        }
+        let mp3buf = mp3Encoder.flush();
+        if (mp3buf.length > 0) {
+            mp3Data.push(new Int8Array(mp3buf));
+        }
+        return new Blob(mp3Data, { type: 'audio/mp3' });
+    }
+});
+</script>
 @endsection

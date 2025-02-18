@@ -41,8 +41,13 @@
                                             <div class="col-md-2 small">{{ $train->created_at ?? '' }}</div>
                                             <div class="col-md-1">
                                             @can('train_delete')
-                                                <a href="{{ $train->cancel_url }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" class="btn btn-danger btn-xs pull-right"><i class="fas fa-ban"></i></a>
-                                                
+                                            <form action="{{ route('frontend.trains.destroy', $train->id) }}" method="POST" onsubmit="return confirm ('Are you sure?');" style="display: inline-block;">
+                                                @method('DELETE')
+                                                @csrf
+                                                <button type="submit" class="btn btn-xs btn-danger" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>    
                                             @endcan
                                             </div>
                                             

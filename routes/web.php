@@ -86,6 +86,7 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     Route::resource('generates', 'GenerateController');
     Route::get('generate/create/{model_id}', 'GenerateController@create')->name('generates.createWithModel');
     Route::post('generates/status', 'GenerateController@status')->name('generates.status');
+    Route::get('generate/build/{generate_id}', 'GenerateController@build')->name('generates.build');
 
 
     // Credits

@@ -21,6 +21,10 @@ class UpdateGenerateRequest extends FormRequest
                 'required',
                 'integer',
             ],
+            'audio_url' => [
+                'string',
+                'nullable',
+            ],
             'image_url' => [
                 'string',
                 'nullable',

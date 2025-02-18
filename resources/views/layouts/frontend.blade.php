@@ -52,6 +52,24 @@
                                     {{ __('Dashboard') }}
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('frontend.photos.index') }}">
+                                    {{ __('Gallery') }}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('frontend.trains.index') }}">
+                                    {{ __('Training') }}
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('frontend.generates.index') }}">
+                                    {{ __('Generate') }}
+                                </a>
+                            </li>
+
+                         
                         @endguest
                     </ul>
 
@@ -68,6 +86,11 @@
                                 </li>
                             @endif
                         @else
+                        <li class="nav-item">
+                                <a class="nav-link" href="{{ route('frontend.home') }}">
+                                    {{ __('Credits') }} ({{App\Models\Credit::where('email', auth()->user()->email)->sum('points')}})
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }} <span class="caret"></span>
