@@ -6,7 +6,7 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
             @can('train_create')
-                <div class="mb-3 d-flex justify-content-end">
+                <div class="mb-3 d-flex justify-content-left">
                     <a class="btn btn-success" href="{{ route('frontend.trains.create') }}">
                         {{ trans('global.add') }} {{ trans('cruds.train.title_singular') }}
                     </a>
