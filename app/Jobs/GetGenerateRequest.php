@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use GuzzleHttp\Client;
 use Exception;
 
-class SendTrainingRequest implements ShouldQueue
+class GetGenerateRequest implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -43,6 +43,7 @@ class SendTrainingRequest implements ShouldQueue
      * @var Client
      */
     protected $client;
+    protected $urlWithWebhook;
 
     /**
      * Create a new job instance.
@@ -56,10 +57,13 @@ class SendTrainingRequest implements ShouldQueue
         $this->apiKey = env('FAL_AI_API_KEY');
         
         // Set the API base URL from environment or use default
-        $this->baseUrl = env('FAL_AI_BASE_URL', 'https://api.fal.ai/models/fal-ai/flux-lora-portrait-trainer');
+        $this->baseUrl = env('FAL_AI_BASE_URL', 'https://queue.fal.run/fal-ai/flux/dev');
         
         // Initialize HTTP client
         $this->client = new Client();
+
+        $this->urlWithWebhook = $this->base_url . '?webhook=' . env('APP_URL') . '/api/webhook';
+
     }
 
     /**
@@ -69,40 +73,39 @@ class SendTrainingRequest implements ShouldQueue
      */
     public function handle()
     {
+        $generate = Generate::find($request->id);
+        $client = new Client();
         try {
-            $client = new \GuzzleHttp\Client();
-            $response = $client->post('https://queue.fal.run/fal-ai/flux-lora-fast-training', [
+            // Make a GET request to check job status
+            $response = $client->post($this->urlWithWebhook, [
                 'headers' => [
                     'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
                     'Content-Type' => 'application/json',
                 ],
-                'json' => [
-                    'images_data_url' => $this->model->zipped_file_url,
-                ],
-            ]);
-          
-            //    $response = $this->submitTrainingJob($url);
-                $responseBody = $response->getBody()->getContents();
-                $responseData = json_decode($responseBody, true);
-                \Log::info("API Response: " . $responseData);
-                if ($responseData !== null) {
-                    // Update model with response data from training API
-                    $train->status = $responseData['status'];
-                    $train->requestid = $responseData['request_id'];
-                    $train->status_url = $responseData['status_url'];
-                    $train->response_url = $responseData['response_url'];
-                    $train->cancel_url = $responseData['cancel_url'];
-                    $train->queue_position = $responseData['queue_position'];
-                    $train->save();
-                } else {
-                    \Log::error('Failed to decode JSON response: ' . $responseData);
-                }
+            ]);            
+            // Return decoded response
+            $responseBody = json_decode($response->getBody(), true);
+      
+             if($responseBody['status'] == "OK"){
+                
+               $generate->status = "NEW";
+               $generate->request_id = $responseBody['request_id'];
+                $generate->save();
 
-            return $response;
+                return $result;
+
+
+             }
+           
         } catch (Exception $e) {
-            \Log::error('Training job submission failed: ' . $e->getMessage());
+        
         }
     }
 
+
+    public function status(Request $request){
+        
+       
+    }
 
 }

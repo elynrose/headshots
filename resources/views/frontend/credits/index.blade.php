@@ -1,21 +1,13 @@
 @extends('layouts.frontend')
 @section('content')
 <div class="container">
+<h3 class="mb-5">Credit History</h3>
+
     <div class="row justify-content-center">
         <div class="col-md-12">
-            @can('credit_create')
-                <div style="margin-bottom: 10px;" class="row">
-                    <div class="col-lg-12">
-                        <a class="btn btn-success" href="{{ route('frontend.credits.create') }}">
-                            {{ trans('global.add') }} {{ trans('cruds.credit.title_singular') }}
-                        </a>
-                    </div>
-                </div>
-            @endcan
+  
             <div class="card">
-                <div class="card-header">
-                    {{ trans('cruds.credit.title_singular') }} {{ trans('global.list') }}
-                </div>
+          
 
                 <div class="card-body">
                     <div class="table-responsive">
@@ -26,11 +18,9 @@
                                         {{ trans('cruds.credit.fields.points') }}
                                     </th>
                                     <th>
-                                        {{ trans('cruds.credit.fields.email') }}
+                                        {{ trans('cruds.credit.fields.created_at') }}
                                     </th>
-                                    <th>
-                                        &nbsp;
-                                    </th>
+                                  
                                 </tr>
                             </thead>
                             <tbody>
@@ -40,30 +30,9 @@
                                             {{ $credit->points ?? '' }}
                                         </td>
                                         <td>
-                                            {{ $credit->email ?? '' }}
+                                            {{ $credit->created_at ?? '' }}
                                         </td>
-                                        <td>
-                                            @can('credit_show')
-                                                <a class="btn btn-xs btn-primary" href="{{ route('frontend.credits.show', $credit->id) }}">
-                                                    {{ trans('global.view') }}
-                                                </a>
-                                            @endcan
-
-                                            @can('credit_edit')
-                                                <a class="btn btn-xs btn-info" href="{{ route('frontend.credits.edit', $credit->id) }}">
-                                                    {{ trans('global.edit') }}
-                                                </a>
-                                            @endcan
-
-                                            @can('credit_delete')
-                                                <form action="{{ route('frontend.credits.destroy', $credit->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
-                                                    <input type="hidden" name="_method" value="DELETE">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('global.delete') }}">
-                                                </form>
-                                            @endcan
-
-                                        </td>
+                                    
 
                                     </tr>
                                 @endforeach

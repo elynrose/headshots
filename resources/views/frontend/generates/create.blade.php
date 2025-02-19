@@ -1,207 +1,163 @@
 @extends('layouts.frontend')
 @section('content')
 <div class="container">
+<h3 class="mb-5">Generate Image</h3>
+
     <div class="row justify-content-center">
         <div class="col-md-6">
-
             <div class="card">
-                <div class="card-header">
-                    {{ trans('global.create') }} {{ trans('cruds.generate.title_singular') }}
-                </div>
-
                 <div class="card-body">
-                    <form method="POST" action="{{ route("frontend.generates.store") }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('frontend.generates.store') }}" enctype="multipart/form-data">
                         @method('POST')
                         @csrf
 
-                        @if($fals->model_type=='image' || $fals->model_type=='video')
-                        <div class="form-group">
-                            <label for="prompt">{{ trans('cruds.generate.fields.prompt') }}</label>
-                            <textarea class="form-control" name="prompt" id="prompt">{{ old('prompt') }}</textarea>
-                            @if($errors->has('prompt'))
-                                <div class="invalid-feedback">
-                                    {{ $errors->first('prompt') }}
-                                </div>
-                            @endif
-                            <span class="help-block small text-muted">{{ trans('cruds.generate.fields.prompt_helper') }}</span>
-                        </div>
-                        @elseif($fals->model_type=='audio')
-                        
-                        <!-- Audio recording section 
-                        <div class="form-group">
-                            <label>Record your voice:</label>
-                            <div class="mb-2">
-                                <button type="button" id="recordBtn" class="btn btn-primary">Record</button>
-                                <button type="button" id="pauseBtn" class="btn btn-secondary" disabled>Pause</button>
-                                <button type="button" id="stopBtn" class="btn btn-danger" disabled>Stop</button>
-                                <button type="button" id="playBtn" class="btn btn-info" disabled>Play</button>
-                            </div>
-                            <audio id="audioPlayback" controls style="display:none;"></audio>
-                             <input type="hidden" name="audio_mp3" id="audio_mp3">
-                        </div>-->
-
-                        <div class="form-group">
-                        <input type="hidden" name="video_url" id="video_url" value="{{ $existingImages->video_url }}">
-                            <label for="audio_mp3" class="required">Select Audio File</label>
-                        <input type="file" name="audio_mp3" id="audio_mp3">
-                        </div>
-                        @endif
-
-
-                        
-                        @if($fals->model_type=='image')
-
-                        <div class="form-group">
-                            <label class="required" for="train_id">{{ trans('cruds.generate.fields.train') }}</label>
-                            <select class="form-control select" name="train_id" id="train_id" required>
-                                @foreach($trains as $id => $entry)
-                                    <option value="{{ $id }}" {{ old('train_id') == $id ? 'selected' : '' }}>{{ $entry }}</option>
-                                @endforeach
-                            </select>
-                            @if($errors->has('train'))
-                                <div class="invalid-feedback">
-                                    {{ $errors->first('train') }}
-                                </div>
-                            @endif
-                            <span class="help-block small text-muted">{{ trans('cruds.generate.fields.train_helper') }}</span>
-                        </div>
-                        @endif
-                   
-                         <!-- Existing Images selection -->
-                         @if($fals->model_type=='video')
-                        @if(isset($existingImages))
-                        @if(Request::get('parent_id'))
-                        <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
-                        @endif
-                        <div class="form-group">
-                            <div id="image-preview" class="mt-3">
-                                <input type="hidden" name="image_url" id="image_url" value="{{ $existingImages->image_url }}">
-                                <img src="{{ $existingImages->image_url }}" alt="Selected Image" class="img-thumbnail" style="width:100%; display:block;">
-                            </div>
-                        </div>
-                        @endif
-                        
-                        @elseif($fals->model_type=='audio')
-                        @if(Request::get('parent_id'))
-                        <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
-                        @endif
-                        @if(isset($existingImages))
-                        <div class="form-group
-                        ">
-                            <div id="video-preview" class="mt-3">
-                                <video width="100%" controls>
-                                    <source src="{{ $existingImages->video_url }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        </div>
-                        @endif
-                        @endif
-                  
-                        <div class="form-group">
-                            <a href="#advanced" class="btn btn-link" data-toggle="collapse">{{ trans('global.advanced_mode') }}</a>
-                        </div>
-                        <div id="advanced" class="collapse">
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="width">{{ trans('cruds.generate.fields.width') }}</label>
-                                        <select class="form-control" name="width" id="width">
-                                            <option value="512">512</option>
-                                            <option value="576">576</option>
-                                            <option value="640">640</option>
-                                            <option value="704">704</option>
-                                            <option value="768">768</option>
-                                            <option value="832">832</option>
-                                            <option value="896">896</option>
-                                            <option value="960">960</option>
-                                            <option value="1024">1024</option>
-                                        </select>
-                                        @if($errors->has('width'))
-                                            <div class="invalid-feedback">
-                                                {{ $errors->first('width') }}
-                                            </div>
-                                        @endif
-                                        <span class="help-block small text-muted">{{ trans('cruds.generate.fields.width_helper') }}</span>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="height">{{ trans('cruds.generate.fields.height') }}</label>
-                                        <select class="form-control" name="height" id="height">
-                                            <option value="512">512</option>
-                                            <option value="576">576</option>
-                                            <option value="640">640</option>
-                                            <option value="704">704</option>
-                                            <option value="768">768</option>
-                                            <option value="832">832</option>
-                                            <option value="896">896</option>
-                                            <option value="960">960</option>
-                                            <option value="1024">1024</option>
-                                        </select>
-                                        @if($errors->has('height'))
-                                            <div class="invalid-feedback">
-                                                {{ $errors->first('height') }}
-                                            </div>
-                                        @endif
-                                        <span class="help-block small text-muted">{{ trans('cruds.generate.fields.height_helper') }}</span>
-                                    </div>
-                                </div>
-                            </div>
+                        @if($fals->model_type == 'image' || $fals->model_type == 'video')
                             <div class="form-group">
-                                <label for="inference">{{ trans('cruds.generate.fields.inference') }}</label>
-                                <input class="form-control" type="range" name="inference" id="inference" value="{{ old('inference', '28') }}" min="1" max="100" step="1" oninput="this.nextElementSibling.value = this.value">
-                                <output>28</output>
-                                @if($errors->has('inference'))
+                                <label for="prompt">{{ trans('cruds.generate.fields.prompt') }}</label>
+                                <textarea class="form-control" name="prompt" id="prompt">{{ old('prompt') }}</textarea>
+                                @if($errors->has('prompt'))
                                     <div class="invalid-feedback">
-                                        {{ $errors->first('inference') }}
+                                        {{ $errors->first('prompt') }}
                                     </div>
                                 @endif
-                                <span class="help-block small text-muted">{{ trans('cruds.generate.fields.inference_helper') }}</span>
+                                <span class="help-block small text-muted">{{ trans('cruds.generate.fields.prompt_helper') }}</span>
                             </div>
+                        @elseif($fals->model_type == 'audio')
                             <div class="form-group">
-                                <label for="seed">{{ trans('cruds.generate.fields.seed') }}</label>
-                                <input class="form-control" type="text" name="seed" id="seed" value="{{ old('seed', '') }}">
-                                @if($errors->has('seed'))
+                                <input type="hidden" name="video_url" id="video_url" value="{{ $existingImages->video_url }}">
+                                <label for="audio_mp3" class="required">Select Audio File</label>
+                                <input type="file" name="audio_mp3" id="audio_mp3">
+                            </div>
+                        @endif
+
+                        @if($fals->model_type == 'image')
+                            <div class="form-group">
+                                <label class="required" for="train_id">{{ trans('cruds.generate.fields.train') }}</label>
+                                <select class="form-control select" name="train_id" id="train_id" required>
+                                    @foreach($trains as $id => $entry)
+                                        <option value="{{ $id }}" {{ old('train_id') == $id ? 'selected' : '' }}>{{ $entry }}</option>
+                                    @endforeach
+                                </select>
+                                @if($errors->has('train'))
                                     <div class="invalid-feedback">
-                                        {{ $errors->first('seed') }}
+                                        {{ $errors->first('train') }}
                                     </div>
                                 @endif
-                                <span class="help-block small text-muted">{{ trans('cruds.generate.fields.seed_helper') }}</span>
+                                <span class="help-block small text-muted">{{ trans('cruds.generate.fields.train_helper') }}</span>
                             </div>
-                        </div>
-                    
-                       
-                        
+                        @endif
+
+                        @if($fals->model_type == 'video' && isset($existingImages))
+                            @if(Request::get('parent_id'))
+                                <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
+                            @endif
+                            <div class="form-group">
+                                <div id="image-preview" class="mt-3">
+                                    <input type="hidden" name="image_url" id="image_url" value="{{ $existingImages->image_url }}">
+                                    <img src="{{ $existingImages->image_url }}" alt="Selected Image" class="img-thumbnail" style="width:100%; display:block;">
+                                </div>
+                            </div>
+                        @elseif($fals->model_type == 'audio' && isset($existingImages))
+                            @if(Request::get('parent_id'))
+                                <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
+                            @endif
+                            <div class="form-group">
+                                <div id="video-preview" class="mt-3">
+                                    <video width="100%" controls>
+                                        <source src="{{ $existingImages->video_url }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($fals->model_type == 'image')
+                            <div class="form-group">
+                                <a href="#advanced"  data-toggle="collapse">{{ trans('global.advanced_mode') }}</a>
+                            </div>
+                            <div id="advanced" class="collapse">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="width">{{ trans('cruds.generate.fields.width') }}</label>
+                                            <select class="form-control" name="width" id="width">
+                                                @foreach([512, 576, 640, 704, 768, 832, 896, 960, 1024] as $size)
+                                                    <option value="{{ $size }}">{{ $size }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if($errors->has('width'))
+                                                <div class="invalid-feedback">
+                                                    {{ $errors->first('width') }}
+                                                </div>
+                                            @endif
+                                            <span class="help-block small text-muted">{{ trans('cruds.generate.fields.width_helper') }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="height">{{ trans('cruds.generate.fields.height') }}</label>
+                                            <select class="form-control" name="height" id="height">
+                                                @foreach([512, 576, 640, 704, 768, 832, 896, 960, 1024] as $size)
+                                                    <option value="{{ $size }}">{{ $size }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if($errors->has('height'))
+                                                <div class="invalid-feedback">
+                                                    {{ $errors->first('height') }}
+                                                </div>
+                                            @endif
+                                            <span class="help-block small text-muted">{{ trans('cruds.generate.fields.height_helper') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inference">{{ trans('cruds.generate.fields.inference') }}</label>
+                                    <input class="form-control" type="range" name="inference" id="inference" value="{{ old('inference', '28') }}" min="1" max="100" step="1" oninput="this.nextElementSibling.value = this.value">
+                                    <output>28</output>
+                                    @if($errors->has('inference'))
+                                        <div class="invalid-feedback">
+                                            {{ $errors->first('inference') }}
+                                        </div>
+                                    @endif
+                                    <span class="help-block small text-muted">{{ trans('cruds.generate.fields.inference_helper') }}</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="seed">{{ trans('cruds.generate.fields.seed') }}</label>
+                                    <input class="form-control" type="text" name="seed" id="seed" value="{{ old('seed', '') }}">
+                                    @if($errors->has('seed'))
+                                        <div class="invalid-feedback">
+                                            {{ $errors->first('seed') }}
+                                        </div>
+                                    @endif
+                                    <span class="help-block small text-muted">{{ trans('cruds.generate.fields.seed_helper') }}</span>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="form-group">
                             <input class="form-control" type="hidden" name="credit" id="credit" value="{{ old('credit', '1') }}" step="1">
                             <input type="hidden" name="status" id="status" value="NEW">
-                            <input type="hidden" name="user_id" id="user_id" value="{{ auth()->id() }}"> 
-                            <input type="hidden" name="fal_model_id" id="model_id" value="@if($fals){{ $fals->id }}@endif">  
-                            
+                            <input type="hidden" name="user_id" id="user_id" value="{{ auth()->id() }}">
+                            <input type="hidden" name="fal_model_id" id="model_id" value="@if($fals){{ $fals->id }}@endif">
                             <button class="btn btn-danger" type="submit">
                                 {{ trans('global.save') }}
                             </button>
                         </div>
-
-                        
                     </form>
                 </div>
             </div>
-
         </div>
-
+        <div class="col-md-6"></div>
 
     </div>
-    
 </div>
 @endsection
 
 @section('scripts')
 @parent
-<!-- Include lamejs from CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
 <script>
+    /*
 document.addEventListener('DOMContentLoaded', function () {
     let audioContext;
     let microphoneStream;
@@ -237,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
             scriptProcessor.onaudioprocess = function(e) {
                 if (!isRecording) return;
                 let channelData = e.inputBuffer.getChannelData(0);
-                // Store a copy of the data
                 audioData.push(new Float32Array(channelData));
             };
             isRecording = true;
@@ -251,26 +206,23 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error accessing microphone: ', err);
         }
     }
-    
+
     function pauseRecording() {
         if (isRecording) {
-            // Pause recording: stop saving data
             isRecording = false;
             pauseBtn.textContent = 'Resume';
         } else {
-            // Resume recording
             isRecording = true;
             pauseBtn.textContent = 'Pause';
         }
     }
-    
+
     function stopRecording() {
         isRecording = false;
         recordBtn.disabled = false;
         pauseBtn.disabled = true;
         stopBtn.disabled = true;
         playBtn.disabled = false;
-        // Disconnect the nodes and stop tracks
         if (scriptProcessor) {
             scriptProcessor.disconnect();
         }
@@ -280,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (mediaStream) {
             mediaStream.getTracks().forEach(track => track.stop());
         }
-        // Merge all recorded data into one buffer
         let bufferLength = audioData.reduce((sum, arr) => sum + arr.length, 0);
         let mergedBuffer = new Float32Array(bufferLength);
         let offset = 0;
@@ -288,27 +239,23 @@ document.addEventListener('DOMContentLoaded', function () {
             mergedBuffer.set(audioData[i], offset);
             offset += audioData[i].length;
         }
-        // Convert Float32 samples to 16-bit PCM
         let pcmData = floatTo16BitPCM(mergedBuffer);
-        // Encode PCM data to MP3 using lamejs
         let mp3Blob = encodeMP3(pcmData, audioContext.sampleRate);
         let url = URL.createObjectURL(mp3Blob);
         audioPlayback.src = url;
         audioPlayback.style.display = 'block';
-        
-        // Convert blob to Base64 for the hidden input
+
         let reader = new FileReader();
         reader.onloadend = function() {
             hiddenAudioInput.value = reader.result;
         };
         reader.readAsDataURL(mp3Blob);
     }
-    
+
     function playRecording() {
         audioPlayback.play();
     }
-    
-    // Convert Float32Array to Int16Array (PCM 16-bit)
+
     function floatTo16BitPCM(buffer) {
         let l = buffer.length;
         let buf = new Int16Array(l);
@@ -319,9 +266,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return buf;
     }
 
-    // Encode PCM data to MP3 using lamejs
     function encodeMP3(pcmData, sampleRate) {
-        const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // 1 channel, sample rate, 128 kbps
+        const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128);
         const chunkSize = 1152;
         let mp3Data = [];
         for (let i = 0; i < pcmData.length; i += chunkSize) {
@@ -337,6 +283,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return new Blob(mp3Data, { type: 'audio/mp3' });
     }
-});
+});*/
 </script>
 @endsection

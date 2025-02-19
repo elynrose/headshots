@@ -75,6 +75,7 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     Route::post('photos/media', 'PhotosController@storeMedia')->name('photos.storeMedia');
     Route::post('photos/ckmedia', 'PhotosController@storeCKEditorImages')->name('photos.storeCKEditorImages');
     Route::resource('photos', 'PhotosController');
+    
 
     // Train
     Route::delete('trains/destroy', 'TrainController@massDestroy')->name('trains.massDestroy');
@@ -92,6 +93,7 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     // Credits
     Route::delete('credits/destroy', 'CreditsController@massDestroy')->name('credits.massDestroy');
     Route::resource('credits', 'CreditsController');
+    Route::get('credits/{plan_type}/{transaction_id}', 'CreditsController@buy')->name('credits.buy');
 
     // Payments
     Route::delete('payments/destroy', 'PaymentsController@massDestroy')->name('payments.massDestroy');

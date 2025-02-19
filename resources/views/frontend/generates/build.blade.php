@@ -7,7 +7,7 @@
                         <div class="row">
 
                         @foreach($childs as $key => $child)
-                                <div class="col-md-12 @if($child->status=='NEW' || $child->status=='IN_QUEUE' || $child->status=='IN_PROGRESS') waiting @elseif($child->status=='COMPLETED' || $child->status=='ERROR') @endif generate_{{$child->id}}" data-id="{{ $child->id }}">
+                                <div class="child col-md-12 @if($child->status=='NEW' || $child->status=='IN_QUEUE' || $child->status=='IN_PROGRESS') waiting @elseif($child->status=='COMPLETED' || $child->status=='ERROR') @endif generate_{{$child->id}}" data-id="{{ $child->id }}">
                                     <div class="card shadow-sm mb-3">
                                         <div class="card-body">
                                          <div class="row">
@@ -28,18 +28,18 @@
                                             <p class="py-2">
                                                 @if($child->fal  && $child->fal->model_type =='image')
                                                @php  $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
-                                                <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$child->id ]) }}">
+                                                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$child->id,'parent_id'=>Request::segment(3) ]) }}">
                                                 <i class="fas fa-video"></i> {{ _('Generate Video') }} </a>
-                                                    <a href="{{ $child->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+                                                    <a href="{{ $child->image_url ?? '' }}" class="btn btn-default btn-sm" download><i class="fas fa-download"></i></a>
 
                                                 @elseif($child->fal  && $child->fal->model_type =='video')
                                                 
                                                 @php  $vid = App\Models\Fal::where('model_type', 'audio')->first(); @endphp
 
-                                                <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$child->id,'parent_id'=>Request::segment(3) ]) }}">
+                                                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$child->id,'parent_id'=>Request::segment(3)]) }}">
                                                    <i class="fas fa-music"></i> {{ _('Add Audio') }}
                                                     </a>
-                                                    <a href="{{ $child->video_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+                                                    <a href="{{ $child->video_url ?? '' }}" class="btn btn-default btn-sm" download><i class="fas fa-download"></i></a>
 
                                                 @endif
 
@@ -88,18 +88,18 @@
                                             <p class="py-2">
                                                 @if($generate->fal  && $generate->fal->model_type =='image')
                                                @php  $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
-                                                <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id]) }}">
+                                                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id,'parent_id'=>Request::segment(3) ]) }}">
                                                 <i class="fas fa-video"></i> {{ _('Generate Video') }} </a>
-                                                    <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+                                                    <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-sm" download><i class="fas fa-download"></i></a>
 
                                                 @elseif($generate->fal  && $generate->fal->model_type =='video' || $generate->fal->model_type =='audio')
                                                 
                                                 @php  $vid = App\Models\Fal::where('model_type', 'audio')->first(); @endphp
 
-                                                <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id, 'parent_id'=>Request::segment(3) ]) }}">
+                                                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.create', ['model_id' => $vid->id, 'image_id'=>$generate->id,'parent_id'=>Request::segment(3) ]) }}">
                                                    <i class="fas fa-music"></i> {{ _('Add Audio') }}
                                                     </a>
-                                                    <a href="{{ $generate->video_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+                                                    <a href="{{ $generate->video_url ?? '' }}" class="btn btn-default btn-sm" download><i class="fas fa-download"></i></a>
 
                                                 @endif
 
@@ -140,56 +140,6 @@
 @section('scripts')
 @parent
 <script>
-if ($('.waiting').length > 0) {
-    setInterval(function() {
-        $('.waiting').each(function() {
-            var generateId = $(this).data('id');
-            $.ajax({
-                url: '{{ route('frontend.generates.status') }}',
-                method: 'POST',
-                data: { id: generateId },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.status === 'COMPLETED') {
-
-                        $('.waiting.generate_' + generateId).removeClass('waiting');
-                        $('.waiting.generate_' + generateId).hide()
-
-                        if (response.type=='video' || response.type=='audio') {
-
-                            $('.video_' + generateId).attr('src', response.video_url);
-                            $('.waiting.generate_' + generateId).fadeIn()
-
-                        } else if (response.type=='image') {
-
-                            $('.image_' + generateId).attr('src', response.image_url);
-                            $('.waiting.generate_' + generateId).fadeIn()
-
-                        }
-                        $('#status_' + generateId).text('COMPLETED');
-
-                    } else if (response.status === 'ERROR') {
-                        
-                        $('.waiting.generate_' + generateId).removeClass('waiting').addClass('error');
-                        $('#status_' + generateId).text('ERROR');
-
-                    } else if(response.status === 'IN_PROGRESS' || response.status === 'IN_QUEUE' || response.status === 'NEW') {
-                       
-                        $('#status_' + generateId).text('IN_PROGRESS');
-
-                    }
-                },
-                error: function() {
-                    console.log('Error fetching status for generate ID:', generateId);
-                }
-            });
-        });
-    }, 5000);
-}
-
 
     $(function () {
   let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
@@ -234,7 +184,57 @@ if ($('.waiting').length > 0) {
           .columns.adjust();
   });
   
-})
+  if ($('.waiting').length > 0) {
+    setInterval(function() {
+        $('.waiting').each(function() {
+            var generateId = $(this).data('id');
+            $.ajax({
+                url: '{{ route('frontend.generates.status') }}',
+                method: 'POST',
+                data: { id: generateId },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    //decode the json response
+                    var response = JSON.parse(response);                    
+                    if (response.status === 'COMPLETED') {
+
+                        $('.waiting.generate_' + generateId).removeClass('waiting');
+
+                        if (response.type=='video' || response.type=='audio') {
+
+                            $('.video_' + generateId).attr('src', response.video_url);
+                            $('.waiting.generate_' + generateId).show();
+
+                        } else if (response.type=='image') {
+                            console.log(response);
+                            $('.image_' + generateId).attr('src', response.image_url);
+                            $('.waiting.generate_' + generateId).show()
+
+                        }
+                        $('#status_' + generateId).text('COMPLETED');
+
+                    } else if (response.status === 'ERROR') {
+                        
+                        $('.waiting.generate_' + generateId).removeClass('waiting').addClass('error');
+                        $('#status_' + generateId).text('ERROR');
+
+                    } else if(response.status === 'IN_PROGRESS' || response.status === 'IN_QUEUE' || response.status === 'NEW') {
+                       
+                        $('#status_' + generateId).text('IN_PROGRESS');
+
+                    }
+                },
+                error: function() {
+                    console.log('Error fetching status for generate ID:', generateId);
+                }
+            });
+        });
+    }, 5000);
+}
+
+});
 
 </script>
 @endsection

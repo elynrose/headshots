@@ -1,6 +1,8 @@
 @extends('layouts.frontend')
 @section('content')
 <div class="container">
+<h3 class="mb-5">Training History</h3>
+
     <div class="row justify-content-center">
         <div class="col-md-12">
             @can('train_create')

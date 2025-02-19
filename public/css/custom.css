@@ -3,7 +3,7 @@
 
 body {
     font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #f6f9fc, #e9eff5);
+    background: #ffffff;
     color: #32325d;
     margin: 0;
     padding: 0;
@@ -78,7 +78,7 @@ table.dataTable thead th {
 .btn-info,
 .badge-info {
     color: white;
-    background: linear-gradient(45deg, #6772e5, #89a9f2);
+    background: #000;
     border-color: transparent;
 }
 
@@ -91,22 +91,21 @@ table.dataTable thead .sorting_desc {
 .sidebar .nav-item {
     cursor: pointer;
 }
-
 .btn-default {
-    color: #32325d;
-    background-color: #f6f9fc;
-    border-color: #e6ebf1;
+    color: #ffffff;
+    background-color: #000000;
+    border-color: #000000;
 }
 
 .btn-default.focus,
 .btn-default:focus {
-    box-shadow: 0 0 0 .2rem rgba(50, 50, 93, .25);
+    box-shadow: 0 0 0 .2rem rgba(0, 0, 0, .25);
 }
 
 .btn-default:hover {
-    color: #32325d;
-    background-color: #e6ebf1;
-    border-color: #d1dbe1;
+    color: #ffffff;
+    background-color: #333333;
+    border-color: #333333;
 }
 
 .btn-group-xs > .btn,
@@ -155,3 +154,31 @@ table.dataTable thead .sorting_desc {
 .custom-select.form-control-sm {
     padding: 0.25rem 1.5rem;
 }
+
+.card .card-header {
+    background-color: #000;
+    color: #fff;
+}
+
+.card{
+    border: 1px solid #e6ebf1;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(50, 50, 93, 0.15);
+}
+
+.card-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e6ebf1;
+}
+
+.btn {
+    color: #ffffff;
+    background-color: #000000;
+    border-color: #000000;
+}
+
+a, a.link, a.link:hover {
+    color: #000000;
+}
+
+

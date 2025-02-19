@@ -51,12 +51,47 @@ class PhotosController extends Controller
             $name = $key . '/' . $filename;
             $amz_url = env('AWS_FILE_URL') . '/' . $name;
 
+
             //Get the url of the uploaded file
            // $url = $photo->getMedia('photo')->first()->getUrl($key);
 
             //Update the model with the url
             $photo->update(['url' => $amz_url, 'temporary_amz_url' => $amz_url]);
 
+
+             /*
+    $client = new Client();
+    try {
+        if (file_exists($filePath)) {
+            // Make a GET request to check job status
+            $response = $client->post('https://api.fal.ai/storage/upload', [
+                'headers' => [
+                    'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ],
+                'multipart' => [
+                    [
+                        'name'     => 'file',
+                        'contents' => file_get_contents($filePath),
+                        'filename' => 'hello.txt',
+                    ],
+                ],
+            ]);            
+            // Return decoded response
+            $responseBody = json_decode($response->getBody(), true);
+            return $responseBody;
+        } else {
+            return ['error' => 'File not found'];
+        }
+
+    } catch (RequestException $e) {
+        // Catch any request exceptions
+        if ($e->hasResponse()) {
+            // Get the response
+            $response = $e->getResponse();
+            return ['error' => 'File upload failed', 'status' => $response->getStatusCode()];
+        }
+    }*/
         }
 
         if ($media = $request->input('ck-media', false)) {

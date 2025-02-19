@@ -53,12 +53,13 @@ class ProcessGeneratePhotos implements ShouldQueue
             // Set the 'parent' field (if applicable) and update model attributes
             \Log::info($this->model->fal->model_type);
             
-            //If model id exists then update parent with the model id
+            /*If model id exists then update parent with the model id
             if($this->model->fal->model_type === 'audio' || $this->model->fal->model_type === 'video'){
                 $this->model->update([
                     'parent'       => $this->model->id,
                 ]);
             }
+                */
 
             $this->model->update([
                 'status'       => $responseBody['status'] ?? $this->model->status,
@@ -137,10 +138,13 @@ class ProcessGeneratePhotos implements ShouldQueue
 
         // Create a new Guzzle HTTP client instance.
         $client = new Client();
+        
+        $urlWithWebhook = $fal->base_url . '?webhook=' . env('APP_URL') . '/api/webhook';
+        
 
         try {
             // Send a POST request to the external API using the base URL from the Fal model.
-            $response = $client->post($fal->base_url, [
+            $response = $client->post($urlWithWebhook, [
                 'headers' => [
                     'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
                     'Content-Type'  => 'application/json',

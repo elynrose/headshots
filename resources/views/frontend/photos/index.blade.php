@@ -1,12 +1,14 @@
 @extends('layouts.frontend')
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row">
+    <h3 class="mb-5">Training Gallery</h3>
+
         <div class="col-md-12">
             @can('photo_create')
                 <div class="action-bar mb-5">
                     <a class="btn btn-success" href="{{ route('frontend.photos.create') }}">
-                        {{ trans('global.add') }} {{ trans('cruds.photo.title_singular') }}
+                       <i class="fas fa-plus"></i> {{ trans('global.add') }} {{ trans('cruds.photo.title_singular') }}
                     </a>
                 </div>
             @endcan
@@ -25,7 +27,7 @@
                                         </div>
                                         <div class="photo-details mt-2">
                                             <label>
-                                                <input type="checkbox" disabled {{ $photo->use_for_training ? 'checked' : '' }}> {{ trans('cruds.photo.fields.use_for_training') }}
+                                                <input disabled class="photos_{{$photo->id}} photo" data-id="{{$photo->id}}" type="checkbox" {{ $photo->use_for_training ? 'checked' : '' }}> {{ trans('cruds.photo.fields.use_for_training') }}
                                             </label>
                                         </div>
                                     </div>
@@ -66,6 +68,7 @@
 
 @section('scripts')
 <script>
+ 
     document.getElementById("searchInput").addEventListener("keyup", function() {
         let filter = this.value.toLowerCase();
         let items = document.querySelectorAll(".photo-item");

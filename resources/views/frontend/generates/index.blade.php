@@ -1,18 +1,9 @@
 @extends('layouts.frontend')
 @section('content')
 <div class="container">
+
     <div class="row justify-content-center">
-        <div class="col-md-12">
-            @can('generate_create')
-                <div class="mb-5">
-                    <div class="row">
-                        
-                                    <a class="btn btn-primary mr-3" href="{{ route('frontend.generates.create', ['model_id'=>2])}}">Generate</a><a class="btn btn-primary" href="{{ route('frontend.trains.create')}}">Train</a>
-                            </div>
-                    </div>
-                </div>
-            @endcan
-            <div>
+    
            
                 <div>
                     <div>
@@ -28,7 +19,7 @@
                                                 <video src="{{$generate->video_url ?? asset('/images/loading.mp4')}}" controls loop  width="100%" height="225" class="video_{{ $generate->id }}"></video>
                                                @elseif($generate->fal  && $generate->fal->model_type =='image')
                                                <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i></span>
-                                              <a href="{{ $generate->image_url ?? '' }}" style="width:100%; height:225px; display:block; overflow:hidden;"> 
+                                              <a href="#" style="width:100%; height:225px; display:block; overflow:hidden;"> 
                                                 <img src="{{ $generate->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$generate->id}} d-block mx-auto" alt="{{$generate->title}}" loading="lazy">
                                              </a> 
                                                   @else
@@ -100,21 +91,21 @@ if ($('.waiting').length > 0) {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
-                    console.log(response);
+                    //decode the json response
+                    var response = JSON.parse(response);                    
                     if (response.status === 'COMPLETED') {
 
                         $('.waiting.generate_' + generateId).removeClass('waiting');
-                        $('.waiting.generate_' + generateId).hide()
 
                         if (response.type=='video' || response.type=='audio') {
 
                             $('.video_' + generateId).attr('src', response.video_url);
-                            $('.waiting.generate_' + generateId).fadeIn()
+                            $('.waiting.generate_' + generateId).show();
 
                         } else if (response.type=='image') {
-
+                            console.log(response);
                             $('.image_' + generateId).attr('src', response.image_url);
-                            $('.waiting.generate_' + generateId).fadeIn()
+                            $('.waiting.generate_' + generateId).show()
 
                         }
                         $('#status_' + generateId).text('COMPLETED');

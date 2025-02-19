@@ -79,7 +79,8 @@ class GenerateController extends Controller
 
         $users = User::pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
 
-        return view('frontend.generates.build', compact('trains', 'users', 'fals', 'existingImages'));
+
+        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages'));
     }
 
     public function store(StoreGenerateRequest $request)
@@ -195,37 +196,35 @@ class GenerateController extends Controller
         ]);  
 
         $final_result = json_decode($final_response->getBody(), true);
-
-        // Update the generate model with the final results
-        $generate->status = "COMPLETED";
+       
+   
 
 
         if($fal->model_type == 'image'){
             $generate->image_url = $final_result['images'][0]['url'];
-            $final_result['image_url'] = $final_result['images'][0]['url'];
-          //  $generate->file_size = $final_result['images'][0]['file_size'];
+            $res['image_url'] = $final_result['images'][0]['url'];
+            $res['type'] =  $fal->model_type;
+            $res['status'] = "COMPLETED";
+            $generate->status = "COMPLETED";
+            $generate->save();
+            return json_encode($res, true);
 
         }elseif($fal->model_type == 'video' || $fal->model_type == 'audio'){
             $generate->video_url = $final_result['video']['url'];
-            $final_result['video_url'] = $final_result['video']['url'];
-           // $generate->file_size = $final_result['video']['file_size'];
+            $res['video_url'] = $final_result['video']['url'];
+            $res['type'] =  $fal->model_type;
+            $res['status'] = "COMPLETED";
+            $generate->status = "COMPLETED";
+            $generate->save();
+            return json_encode($res, true);
         }
 
-        $generate->save();
-
-        //add status= completed to the final result array
-        $final_result['status'] = "COMPLETED";
-        if($final_result['type']=='audio'){
-            $final_result['type'] = 'multimedia';
-        } else{
-        $final_result['type'] = $fal->model_type;
-        }
-
-        return $final_result;
+       
 
 
 
-       // return $final_result;
+
+        return $res;
         
         } catch (Exception $e) {
             //if error 401
@@ -244,6 +243,7 @@ class GenerateController extends Controller
     public function status(Request $request){
         
         $generate = Generate::find($request->id);
+        
         $client = new Client();
         try {
             // Make a GET request to check job status
@@ -259,22 +259,26 @@ class GenerateController extends Controller
              if($responseBody['status'] == "NEW" || $responseBody['status'] == "IN_QUEUE" || $responseBody['status'] == "PROCESSING"){
                 
                 $result = $this->getResults($generate);
-
                 return $result;
 
-             } elseif($responseBody['status'] == "COMPLETED"){
+             } elseif($response->getStatusCode() == 200) {
                 $result = $this->getResults($generate);
+                $generate->status = "COMPLETED";
+                $generate->save();
                 return $result;
 
              }
-              else {
-                $generate->status = $responseBody['status'];
+             
+           } catch (Exception $e) {
+            //if error 401
+            if($e->getCode() == 401){
+                $generate->status = "ERROR";
                 $generate->save();
-             }
-           
-        } catch (Exception $e) {
-        
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+            \Log::error("Failed to get job status: " . $e->getMessage());
+            return response()->json(['error' => 'Failed to get job status'], 500);
         }
-    }
 
+}
 }

@@ -31,4 +31,9 @@ class Credit extends Model
     {
         return $date->format('Y-m-d H:i:s');
     }
+
+    public function payments()
+    {
+        return $this->belongsTo(Payment::class, 'email');
+    }
 }

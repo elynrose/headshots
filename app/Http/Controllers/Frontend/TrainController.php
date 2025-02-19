@@ -57,12 +57,21 @@ class TrainController extends Controller
 
     public function store(StoreTrainRequest $request)
     {
+        // Check if the user already has a training in progress
+        $existingTrain = Train::where('user_id', $request->user_id)
+            ->whereIn('status', ['NEW', 'IN_QUEUE', 'IN_PROGRESS', 'COMPLETED'])
+            ->first();
+
+        if ($existingTrain) {
+            return redirect()->route('frontend.trains.index')
+            ->withErrors(['error' => 'You are only allowed to create one training.']);
+        }
+
         $train = Train::create(
             [
-                'user_id' => $request->user_id,
-                'title' => $request->title,
-                'status'=> 'New',
-
+            'user_id' => $request->user_id,
+            'title' => $request->title,
+            'status'=> 'NEW',
             ]
         );
 
@@ -112,6 +121,7 @@ class TrainController extends Controller
         foreach ($trains as $train) {
 
             $train->delete();
+            
         }
 
         return response(null, Response::HTTP_NO_CONTENT);

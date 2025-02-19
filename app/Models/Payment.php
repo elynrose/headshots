@@ -38,4 +38,7 @@ class Payment extends Model
         parent::boot();
         self::observe(new \App\Observers\PaymentActionObserver);
     }
+
+
+
 }

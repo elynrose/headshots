@@ -64,7 +64,7 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('frontend.generates.index') }}">
+                                <a class="nav-link" href="{{ route('frontend.generates.create', ['model_id'=>2])}}">
                                     {{ __('Generate') }}
                                 </a>
                             </li>
@@ -87,8 +87,8 @@
                             @endif
                         @else
                         <li class="nav-item">
-                                <a class="nav-link" href="{{ route('frontend.home') }}">
-                                    {{ __('Credits') }} ({{App\Models\Credit::where('email', auth()->user()->email)->sum('points')}})
+                                <a class="nav-link" href="{{ route('frontend.credits.index') }}">
+                                    {{ __('Credits') }} ({{App\Models\Credit::where('email', auth()->user()->email)->first()->points}})
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
@@ -217,6 +217,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
 <script src="{{ asset('js/main.js') }}"></script>
+
 @yield('scripts')
 
 </html>
