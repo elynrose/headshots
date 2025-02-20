@@ -85,9 +85,10 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     // Generate
     Route::delete('generates/destroy', 'GenerateController@massDestroy')->name('generates.massDestroy');
     Route::resource('generates', 'GenerateController');
-    Route::get('generate/create/{model_id}', 'GenerateController@create')->name('generates.createWithModel');
+    //Route::get('generate/create/{model_id}', 'GenerateController@create')->name('generates.createWithModel');
     Route::post('generates/status', 'GenerateController@status')->name('generates.status');
     Route::get('generate/build/{generate_id}', 'GenerateController@build')->name('generates.build');
+    Route::get('generates/create/{model_id}/{image_id}/{parent_id}', 'GenerateController@create')->name('generates.createWithParent');
 
 
     // Credits

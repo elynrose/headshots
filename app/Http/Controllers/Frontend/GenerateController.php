@@ -47,20 +47,20 @@ class GenerateController extends Controller
     {
         abort_if(Gate::denies('generate_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $generates = Generate::with(['train', 'user'])
+        $generate = Generate::with(['train', 'user'])
         ->where('id', $request->generate_id)
         ->where('parent', null)
-        ->get();
+        ->first();
 
         $childs = Generate::with(['train', 'user'])
         ->where('parent', $request->generate_id)
-        ->orderBy('id', 'desc')
+        ->orderBy('id', 'asc')
         ->get();
 
 
         $fals = Fal::get();
 
-        return view('frontend.generates.build', compact('generates', 'fals', 'childs'));
+        return view('frontend.generates.build', compact('generate', 'fals', 'childs'));
     }
 
 
@@ -85,6 +85,7 @@ class GenerateController extends Controller
 
     public function store(StoreGenerateRequest $request)
     {
+
         //get the audio file
        /* if($request->has('audio_mp3')){
             $audio_blob = $request->input('audio_mp3');
@@ -103,7 +104,6 @@ class GenerateController extends Controller
             $audio_file_path = 'audio/' . $audio_file_name;
             \Storage::disk('s3')->put($audio_file_path, file_get_contents($audio_file), 'public');
             $audio_url = \Storage::disk('s3')->url($audio_file_path);
-
         }
 
         $generate = Generate::create(
@@ -129,7 +129,7 @@ class GenerateController extends Controller
             ]
         );
 
-        return redirect()->route('frontend.generates.index');
+        return redirect()->route('frontend.generates.build', ['generate_id' => $request->parent]);
     }
 
     public function edit(Generate $generate)

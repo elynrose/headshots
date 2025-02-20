@@ -48,8 +48,8 @@
                         @endif
 
                         @if($fals->model_type == 'video' && isset($existingImages))
-                            @if(Request::get('parent_id'))
-                                <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
+                            @if(Request::segment(5))
+                                <input name="parent" type="hidden" value="{{ Request::segment(5) }}">
                             @endif
                             <div class="form-group">
                                 <div id="image-preview" class="mt-3">
@@ -58,8 +58,8 @@
                                 </div>
                             </div>
                         @elseif($fals->model_type == 'audio' && isset($existingImages))
-                            @if(Request::get('parent_id'))
-                                <input name="parent" type="hidden" value="{{ Request::get('parent_id') }}">
+                            @if(Request::segment(5))
+                                <input name="parent" type="hidden" value="{{ Request::segment(5) }}">
                             @endif
                             <div class="form-group">
                                 <div id="video-preview" class="mt-3">
