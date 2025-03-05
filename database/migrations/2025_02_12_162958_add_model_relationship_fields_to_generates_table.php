@@ -8,7 +8,7 @@ class AddModelRelationshipFieldsToGeneratesTable extends Migration
 {
     public function up()
     {
-        Schema::table('Generates', function (Blueprint $table) {
+        Schema::table('generates', function (Blueprint $table) {
             $table->unsignedBigInteger('fal_model_id')->nullable();
             $table->foreign('fal_model_id', 'fal_fk_10415034')->references('id')->on('fal');
         });
