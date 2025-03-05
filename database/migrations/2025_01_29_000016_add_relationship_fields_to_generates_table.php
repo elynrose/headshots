@@ -13,8 +13,6 @@ class AddRelationshipFieldsToGeneratesTable extends Migration
             $table->foreign('train_id', 'train_fk_10415034')->references('id')->on('trains');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id', 'user_fk_10415030')->references('id')->on('users');
-            $table->unsignedBigInteger('fal_model_id')->nullable();
-            $table->foreign('fal_model_id', 'fal_fk_10415034')->references('id')->on('fal');
         });
     }
 }

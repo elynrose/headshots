@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddRelationshipFieldsToGeneratesTable extends Migration
+class AddModelRelationshipFieldsToGeneratesTable extends Migration
 {
     public function up()
     {
