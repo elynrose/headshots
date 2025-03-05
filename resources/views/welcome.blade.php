@@ -80,62 +80,7 @@
         </div>
     </div>
 
-    <!-- Pricing Section -->
-    <div class="row justify-content-center py-5">
-        <div class="col-md-12">
-            <h2 class="text-center mb-5">Pricing</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card border-dark">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Basic Package</h5>
-                            <ul class="list-unstyled">
-                                <li>50 Credits</li>
-                                <li>1 Training</li>
-                                <li>10 Photos</li>
-                            </ul>
-                            <p class="card-text text-muted">$10</p>
-                            <p><a href="#" class="btn btn-dark">Buy Credits</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-dark bg-dark text-white">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Popular Package</h5>
-                            <ul class="list-unstyled">
-                                <li>100 Credits</li>
-                                <li>2 Training</li>
-                                <li>20 Photos</li>
-                            </ul>
-                            <p class="card-text">$200</p>
-                            <p><a href="#" class="btn btn-dark">Buy Credits</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-dark">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Premium Package</h5>
-                            <ul class="list-unstyled">
-                                <li>200 Credits</li>
-                                <li>4 Training</li>
-                                <li>40 Photos</li>
-                            </ul>
-                            <p class="card-text text-muted">$300</p>
-                            <p><a href="#" class="btn btn-dark">Buy Credits</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!--FAQ accordion section-->
-
     <div class="row justify-content-center mt-4">
         <div class="col-md-12">
             <h2 class="text-center mb-5">FAQ</h2>
@@ -143,9 +88,9 @@
                 <div class="card">
                     <div class="card-header" id="headingOne">
                         <h5 class="mb-0">
-                            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                                 How do I get started?
-                            </button>
+                            </a>
                         </h5>
                     </div>
 
@@ -158,9 +103,9 @@
                 <div class="card">
                     <div class="card-header" id="headingTwo">
                         <h5 class="mb-0">
-                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <a class="collapsed" data-toggle="collapse" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                 How long does it take to process my photo?
-                            </button>
+                            </a>
                         </h5>
                     </div>
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
@@ -172,9 +117,9 @@
                 <div class="card">
                     <div class="card-header" id="headingThree">
                         <h5 class="mb-0">
-                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            <a class="collapsed" data-toggle="collapse" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
                                 Can I use the photos for commercial purposes?
-                            </button>
+                            </a>
                         </h5>
                     </div>
                     <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">

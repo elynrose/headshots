@@ -62,10 +62,10 @@ class TrainController extends Controller
             ->whereIn('status', ['NEW', 'IN_QUEUE', 'IN_PROGRESS', 'COMPLETED'])
             ->first();
 
-        if ($existingTrain) {
+     /*   if ($existingTrain) {
             return redirect()->route('frontend.trains.index')
             ->withErrors(['error' => 'You are only allowed to create one training.']);
-        }
+        } */
 
         $train = Train::create(
             [
@@ -131,14 +131,15 @@ class TrainController extends Controller
     {
         $train = Train::find($request->id);
 
-        if( $train->status == 'NEW') {
-            $this->submitTrainingJob($train);
-        }elseif( $train->status == 'IN_QUEUE') {
+        if( $train->status == 'IN_QUEUE') {
             $this->getJobStatus($train);
         } elseif( $train->status == 'IN_PROGRESS') {
             $this->getResults($train);
+            return json_encode($train);
         } elseif( $train->status == 'COMPLETED') {
            return json_encode($train);
+        } elseif( $train->status == 'NEW') {
+            return;
         }
 
       
@@ -204,7 +205,8 @@ class TrainController extends Controller
      *
      * @param string $url
      * @return \Psr\Http\Message\ResponseInterface|null
-     */
+   */
+  /*
     public function submitTrainingJob($train)
     {
         try {
@@ -241,4 +243,5 @@ class TrainController extends Controller
             \Log::error('Training job submission failed: ' . $e->getMessage());
         }
     }
+          */
 }

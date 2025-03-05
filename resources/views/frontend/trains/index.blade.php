@@ -28,7 +28,7 @@
                                             <div class="col-md-2 diffusers_{{$train->id}}">
                                             @if($train->status=='COMPLETED')
                                                 <a href="{{ $train->diffusers_lora_file }}" target="_blank" class="small"><i class="fas fa-cog"></i> Diffusers Lora File</a>
-                                            @else
+                                            @elseif($train->status=='IN_PROGRESS')
                                                <span class="small"> PENDING </span>
                                             @endif
                                             </div>
@@ -84,14 +84,14 @@ $(document).ready(function() {
 
         $('.waiting').each(function() {
             let id = $(this).data('id');
-            let url = $(this).data('url');
-
+ 
             $.ajax({
-                url: url,
+                url: "{{ route('frontend.trains.status') }}",
                 method: 'POST',
                 data: { id: id },
                 dataType: 'json',
                 success: function(response) {
+                    console.log(response);
                     if (response.status == 'COMPLETED') {
                         let waitingElement = $('.waiting[data-id="' + id + '"]');
                         waitingElement.html('<span class="small badge badge-default">' + response.status + '</span>');
@@ -106,7 +106,7 @@ $(document).ready(function() {
                     let waitingElement = $('.waiting[data-id="' + id + '"]');
                     waitingElement.html('<span class="small badge badge-default">FAILED</span>');
                     waitingElement.removeClass('IN_QUEUE waiting').addClass('FAILED');
-                    alert('An unexpected error occurred: Ckeck your API key and credits.');
+                    console.error(xhr.responseText);
                 }
             });
         });

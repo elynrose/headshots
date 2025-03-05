@@ -161,9 +161,9 @@ table.dataTable thead .sorting_desc {
 }
 
 .card{
-    border: 1px solid #e6ebf1;
+    border: none;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(50, 50, 93, 0.15);
+    box-shadow: 0 1px 100px rgba(50, 50, 93, 0.15);
 }
 
 .card-footer {
@@ -172,13 +172,35 @@ table.dataTable thead .sorting_desc {
 }
 
 .btn {
-    color: #ffffff;
-    background-color: #000000;
-    border-color: #000000;
+    color: #000;
+    background-color: #fff;
+    border-color: #000;
 }
+
 
 a, a.link, a.link:hover {
     color: #000000;
 }
 
+/* change the pagination colors to black and white */
+.pagination > .page-item > .page-link {
+    color: #000;
+    background-color: #fff;
+    border: 1px solid #000;
+}
 
+.pagination > .page-item > .page-link:hover {
+    color: #fff;
+    background-color: #000;
+    border: 1px solid #000;
+}
+
+.pagination > .page-item.active > .page-link {
+    color: #fff;
+    background-color: #000;
+    border: 1px solid #000;
+}
+
+.hide{
+    display: none!important;
+}

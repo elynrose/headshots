@@ -14,13 +14,14 @@
                                         <div class="card-body">
                                          <div class="row">
                                             <div class="col-md-12">
+                                                <div class="loading-gif loader_{{$generate->id}} text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img width="50" src="{{asset('images/loader.gif')}}"></div>
                                                @if($generate->fal  && $generate->fal->model_type =='video' || $generate->fal->model_type =='audio')
                                                <span class="badge badge-success" style="position:absolute; top:0;left:10px;z-index:10;"> <i class="fas fa-video"></i></span>
-                                                <video src="{{$generate->video_url ?? asset('/images/loading.mp4')}}" controls loop  width="100%" height="225" class="video_{{ $generate->id }}"></video>
+                                                <video src="{{$generate->video_url ?? ''}}" controls loop  width="100%" height="225" class="video_{{ $generate->id }}"></video>
                                                @elseif($generate->fal  && $generate->fal->model_type =='image')
                                                <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i></span>
-                                              <a href="#" style="width:100%; height:225px; display:block; overflow:hidden;"> 
-                                                <img src="{{ $generate->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$generate->id}} d-block mx-auto" alt="{{$generate->title}}" loading="lazy">
+                                              <a href="{{route('frontend.generates.build', $generate->id)}}" style="width:100%; height:225px; display:block; overflow:hidden;"> 
+                                                <img src="{{ $generate->image_url ?? '' }}" class="img-fluid image_{{$generate->id}} d-block mx-auto" alt="{{$generate->title}}" loading="lazy">
                                              </a> 
                                                   @else
                                                     {{ _('Model Undefined') }}
@@ -32,7 +33,7 @@
                                                @php  $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
                                                
                                                     <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
-                                                    <a href="{{route('frontend.generates.build', $generate->id)}}" class="btn btn-warning btn-xs"><i class="fas fa-star"></i> Enhance</a>
+                                                    <a href="{{route('frontend.generates.build', $generate->id)}}" class="btn btn-default btn-xs"><i class="fas fa-random"></i> Convert</a>
 
 
                                                 @elseif($generate->fal  && $generate->fal->model_type =='video' || $generate->fal->model_type =='audio')
@@ -79,10 +80,17 @@
 @section('scripts')
 @parent
 <script>
+
+$(function(){
+    $('.loading-gif').hide();   
+});
+
 if ($('.waiting').length > 0) {
     setInterval(function() {
         $('.waiting').each(function() {
+
             var generateId = $(this).data('id');
+            $('.loader_' + generateId).show();
             $.ajax({
                 url: '{{ route('frontend.generates.status') }}',
                 method: 'POST',
@@ -91,11 +99,11 @@ if ($('.waiting').length > 0) {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
-                    //decode the json response
-                    var response = JSON.parse(response);                    
+                    console.log(response);
                     if (response.status === 'COMPLETED') {
 
                         $('.waiting.generate_' + generateId).removeClass('waiting');
+                        $('.loader_' + generateId).hide();
 
                         if (response.type=='video' || response.type=='audio') {
 

@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use App\Models\PayloadGenerator;
 
 class ProcessGeneratePhotos implements ShouldQueue
 {
@@ -105,33 +106,17 @@ class ProcessGeneratePhotos implements ShouldQueue
             return null;
         }
 
+        $payloadGenerator = new PayloadGenerator();
         // Prepare the payload based on the model type of the Fal record.
         if ($fal->model_type === 'image') {
-            $payload = [
-                'loras' => [
-                    [
-                        'path'  => $generate->train->diffusers_lora_file,
-                        'scale' => 1,
-                    ],
-                ],
-                'prompt'               => $generate->prompt ?? null,
-                'embeddings'           => [],
-                'model_name'           => $generate->title,
-                'enable_safety_checker'=> true,
-            ];
+            $payload = $payloadGenerator->generatePayload($fal, $generate);
         } elseif ($fal->model_type === 'video') {
-            $payload = [
-                'prompt'    => $generate->prompt ?? null,
-                'image_url' => $generate->image_url,
-            ];
-        } 
-        elseif($fal->model_type === 'audio'){
-            $payload = [
-                    'audio_url' => $generate->audio_url,
-                    'video_url'    => $generate->video_url ?? null,
-            ];
-        }
-        else {
+            $payload = $payloadGenerator->generatePayload($fal, $generate);
+        } elseif ($fal->model_type === 'audio') {
+            $payload = $payloadGenerator->generatePayload($fal, $generate);
+        } elseif ($fal->model_type === 'upscale') {
+            $payload = $payloadGenerator->generatePayload($fal, $generate);
+        } else {
             Log::warning("Unsupported Fal model type: {$fal->model_type}");
             return null;
         }

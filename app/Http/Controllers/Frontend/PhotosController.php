@@ -49,7 +49,7 @@ class PhotosController extends Controller
             $filename = $photo->getMedia('photo')->first()->file_name;
 
             $name = $key . '/' . $filename;
-            $amz_url = env('AWS_FILE_URL') . '/' . $name;
+            $amz_url = env('AWS_FILE_URL') . $name;
 
 
             //Get the url of the uploaded file

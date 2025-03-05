@@ -17,6 +17,7 @@ use Exception;
 use App\Models\Fal;
 use App\Models\Photo;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ModelPayload;
 
 
 class GenerateController extends Controller
@@ -70,6 +71,13 @@ class GenerateController extends Controller
 
         $trains = Train::pluck('title', 'id')->prepend(trans('global.pleaseSelect'), '');
         $fals = Fal::find(request('model_id'));
+        $payloadTemplate = ModelPayload::where('model_type', $fals->model_type)->first();
+
+        if (!$payloadTemplate) {
+            abort(404, 'Payload template not found.');
+        }
+
+        $payloadDetails = json_decode($payloadTemplate->payload_template, true);
         
         if($request->image_id){
         $existingImages = Generate::where('id', $request->image_id)->first();
@@ -80,7 +88,7 @@ class GenerateController extends Controller
         $users = User::pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
 
 
-        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages'));
+        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages', 'payloadDetails'));
     }
 
     public function store(StoreGenerateRequest $request)
@@ -106,10 +114,22 @@ class GenerateController extends Controller
             $audio_url = \Storage::disk('s3')->url($audio_file_path);
         }
 
+        //if photo is not null, upload to s3 and get url
+        if($request->file('photo')){
+            //save to s3 storage and get url
+            $photo_file = $request->file('photo');
+            $photo_file_name = time() . '.' . $photo_file->getClientOriginalExtension();
+            $photo_file_path = 'photos/' . $photo_file_name;
+            \Storage::disk('s3')->put($photo_file_path, file_get_contents($photo_file), 'public');
+            $image_url = \Storage::disk('s3')->url($photo_file_path);
+        }
+        
+
+
         $generate = Generate::create(
             [
                 'prompt' => $request->prompt ?? null,
-                'fal_model_id' => $request->fal_model_id,
+                'fal_model_id' => $request->fal_model_id ?? null,
                 'train_id' => $request->train_id,
                 'width' => $request->width ?? null,
                 'height' => $request->height ?? null,
@@ -128,8 +148,13 @@ class GenerateController extends Controller
                 'user_id' => Auth::id(),
             ]
         );
+        if($request->fal_model_id == 2){
+            $generates = Generate::where('user_id', Auth::id())->get();
+            return redirect()->route('frontend.generates.index', compact('generates'));
 
-        return redirect()->route('frontend.generates.build', ['generate_id' => $request->parent]);
+        } else {
+        return redirect()->route('frontend.generates.build', ['generate_id' => $request->parent ]);
+        }
     }
 
     public function edit(Generate $generate)
@@ -200,23 +225,33 @@ class GenerateController extends Controller
    
 
 
-        if($fal->model_type == 'image'){
-            $generate->image_url = $final_result['images'][0]['url'];
-            $res['image_url'] = $final_result['images'][0]['url'];
-            $res['type'] =  $fal->model_type;
-            $res['status'] = "COMPLETED";
-            $generate->status = "COMPLETED";
-            $generate->save();
-            return json_encode($res, true);
+        if($fal->model_type === 'image'){
 
-        }elseif($fal->model_type == 'video' || $fal->model_type == 'audio'){
-            $generate->video_url = $final_result['video']['url'];
-            $res['video_url'] = $final_result['video']['url'];
-            $res['type'] =  $fal->model_type;
-            $res['status'] = "COMPLETED";
+            $generate->image_url = $final_result['images'][0]['url'];
             $generate->status = "COMPLETED";
             $generate->save();
-            return json_encode($res, true);
+
+            $res = [
+                "image_url" => $final_result['images'][0]['url'],
+                "type" =>  $fal->model_type,
+                "status" => "COMPLETED"
+            ];
+
+            return response()->json($res);
+
+        }elseif($fal->model_type === 'video' || $fal->model_type === 'audio' || $fal->model_type === 'upscale'){
+
+            $generate->video_url = $final_result['video']['url'];
+            $generate->status = "COMPLETED";
+            $generate->save();
+
+            $res = [
+                "video_url" => $final_result['video']['url'],
+                "type" =>  $fal->model_type,
+                "status" => "COMPLETED"
+            ];
+
+            return response()->json($res);
         }
 
        
@@ -259,12 +294,20 @@ class GenerateController extends Controller
              if($responseBody['status'] == "NEW" || $responseBody['status'] == "IN_QUEUE" || $responseBody['status'] == "PROCESSING"){
                 
                 $result = $this->getResults($generate);
+
+                if(is_null($result)){
+                    return response()->json(['status' => 'IN_PROGRESS', 'type'=>$generate->fal->model_type], 200);
+                }
+
                 return $result;
 
              } elseif($response->getStatusCode() == 200) {
-                $result = $this->getResults($generate);
+
                 $generate->status = "COMPLETED";
                 $generate->save();
+
+                $result = $this->getResults($generate);
+
                 return $result;
 
              }

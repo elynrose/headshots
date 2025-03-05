@@ -87,6 +87,11 @@
                             @endif
                         @else
                         <li class="nav-item">
+                                <a class="nav-link btn btn-sm btn success" href="{{ route('frontend.payments.create') }}">
+                                    {{ __('Add Credits') }}
+                                </a>
+                            </li>
+                        <li class="nav-item">
                                 <a class="nav-link" href="{{ route('frontend.credits.index') }}">
                                     {{ __('Credits') }} ({{App\Models\Credit::where('email', auth()->user()->email)->first()->points}})
                                 </a>

@@ -31,4 +31,10 @@ class PaymentsController extends Controller
         return redirect()->route('frontend.payments.index');
     }
 
+
+    public function create()
+    {
+        return view('frontend.payments.create');
+    }
+
 }

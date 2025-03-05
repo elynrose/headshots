@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use GuzzleHttp\Client;
 use Exception;
+use Illuminate\Http\Request;
 
 class GetGenerateRequest implements ShouldQueue
 {
