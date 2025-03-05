@@ -93,7 +93,7 @@
                             </li>
                         <li class="nav-item">
                                 <a class="nav-link" href="{{ route('frontend.credits.index') }}">
-                                    {{ __('Credits') }} ({{App\Models\Credit::where('email', auth()->user()->email)->first()->points}})
+                                    {{ __('Credits') }} ({{App\Models\Credit::where('email', auth()->user()->email)->first()->points ?? 0}})
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
