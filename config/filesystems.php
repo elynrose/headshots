@@ -72,6 +72,20 @@ return [
             'visibility' => 'public',
         ],
 
+        'cloud' => [
+            'driver' => 's3',
+            'key' => env('LARAVEL_CLOUD_DISK_CONFIG_ACCESS_KEY_ID', '4a8cb0fe9a1321cd9d5c14ca6131d891'),
+            'secret' => env('LARAVEL_CLOUD_DISK_CONFIG_ACCESS_KEY_SECRET', 'c7affc828051db3997daffcdf024bc9550cef1b90eeda93bfa3a3d73c11cdde7'),
+            'region' => env('LARAVEL_CLOUD_DISK_CONFIG_DEFAULT_REGION', 'auto'),
+            'bucket' => env('LARAVEL_CLOUD_DISK_CONFIG_BUCKET', 'fls-9e68b869-a100-420c-bb3d-e0845955481d'),
+            'url' => env('LARAVEL_CLOUD_DISK_CONFIG_URL', 'https://fls-9e68b869-a100-420c-bb3d-e0845955481d.laravel.cloud'),
+            'endpoint' => env('LARAVEL_CLOUD_DISK_CONFIG_ENDPOINT', 'https://367be3a2035528943240074d0096e0cd.r2.cloudflarestorage.com'),
+            'use_path_style_endpoint' => env('LARAVEL_CLOUD_DISK_CONFIG_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'visibility' => 'public',
+        ],
+
+
         
 
     ],

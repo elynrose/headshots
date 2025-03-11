@@ -48,7 +48,7 @@ class PhotosController extends Controller
 
         foreach ($request->input('photo', []) as $file) {
             $photo->addMedia(storage_path('tmp/uploads/' . basename($file)))
-                  ->toMediaCollection('photo', 's3Photos')
+                  ->toMediaCollection('photo', 'cloud')
                   ->setCustomProperty('visibility', 'public');
             
             $key = $photo->getMedia('photo')->first()->getKey();
