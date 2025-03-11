@@ -139,17 +139,18 @@ class ProcessTrainPhotos implements ShouldQueue
             
             $responseBody = $response->getBody()->getContents();
             $responseData = json_decode($responseBody, true);
-            if ($responseData !== null) {
-                // Update model with response data from training API
-                $train->status = $responseData['status'];
-                $train->requestid = $responseData['request_id'];
-                $train->status_url = $responseData['status_url'] ?? null;
-                $train->response_url = $responseData['response_url'] ?? null;
-                $train->cancel_url = $responseData['cancel_url'] ?? null;
-                $train->queue_position = $responseData['queue_position'] ?? null;
+            if (is_null($responseData)) {
+                $train->update(['status' => 'IN_QUEUE']);
                 $train->save();
             } else {
-                \Log::error('Failed to decode JSON response: ' . $responseData);
+            // Update model with response data from training API
+            $train->status = $responseData['status'];
+            $train->requestid = $responseData['request_id'];
+            $train->status_url = $responseData['status_url'] ?? null;
+            $train->response_url = $responseData['response_url'] ?? null;
+            $train->cancel_url = $responseData['cancel_url'] ?? null;
+            $train->queue_position = $responseData['queue_position'] ?? null;
+            $train->save();           
             }
 
         } catch (Exception $e) {
