@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('model_payloads', function (Blueprint $table) {
             $table->id();
             $table->string('model_type')->unique();
+            $table->string('file_type');
             $table->json('payload_template');
             $table->timestamps();
         });
