@@ -245,6 +245,7 @@ class GenerateController extends Controller
                 ];
 
                 return response()->json($res);
+
             } elseif (in_array($fal->model_type, ['video', 'upscale', 'audio'])) {
                 $generate->video_url = $final_result['video']['url'];
                 $generate->status = "COMPLETED";
@@ -252,6 +253,18 @@ class GenerateController extends Controller
 
                 $res = [
                     "video_url" => $final_result['video']['url'],
+                    "type" => $fal->model_type,
+                    "status" => "COMPLETED"
+                ];
+
+                return response()->json($res);
+            }elseif (in_array($fal->model_type, ['train'])) {
+                $generate->video_url = $final_result['images'][0]['url'];
+                $generate->status = "COMPLETED";
+                $generate->save();
+
+                $res = [
+                    "video_url" => $final_result['images'][0]['url'],
                     "type" => $fal->model_type,
                     "status" => "COMPLETED"
                 ];
