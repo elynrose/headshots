@@ -259,12 +259,12 @@ class GenerateController extends Controller
 
                 return response()->json($res);
             }elseif (in_array($fal->model_type, ['train'])) {
-                $generate->video_url = $final_result['images'][0]['url'];
+                $generate->image_url = $final_result['images'][0]['url'];
                 $generate->status = "COMPLETED";
                 $generate->save();
 
                 $res = [
-                    "video_url" => $final_result['images'][0]['url'],
+                    "image_url" => $final_result['images'][0]['url'],
                     "type" => $fal->model_type,
                     "status" => "COMPLETED"
                 ];
