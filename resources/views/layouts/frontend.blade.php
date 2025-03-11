@@ -64,7 +64,7 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('frontend.generates.create', ['model_id'=>2])}}">
+                                <a class="nav-link" href="{{ route('frontend.generates.create', ['model_id'=>1])}}">
                                     {{ __('Generate') }}
                                 </a>
                             </li>

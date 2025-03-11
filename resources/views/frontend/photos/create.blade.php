@@ -5,9 +5,7 @@
         <div class="col-md-6">
 
             <div class="card shadow-sm">
-                <div class="card-header">
-                    {{ trans('global.create') }} {{ trans('cruds.photo.title_singular') }}
-                </div>
+            
 
                 <div class="card-body">
                     <form method="POST" action="{{ route("frontend.photos.store") }}" enctype="multipart/form-data">

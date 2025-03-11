@@ -15,12 +15,12 @@
                                          <div class="row">
                                             <div class="col-md-12">
                                                 <div class="loading-gif loader_{{$generate->id}} text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img width="50" src="{{asset('images/loader.gif')}}"></div>
-                                               @if($generate->fal  && $generate->fal->model_type =='video' || $generate->fal->model_type =='audio')
+                                               @if($generate  && $generate->content_type =='video' || $generate->content_type =='audio')
                                                <span class="badge badge-success" style="position:absolute; top:0;left:10px;z-index:10;"> <i class="fas fa-video"></i></span>
                                                 <video src="{{$generate->video_url ?? ''}}" controls loop  width="100%" height="225" class="video_{{ $generate->id }}"></video>
-                                               @elseif($generate->fal  && $generate->fal->model_type =='image')
-                                               <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i></span>
-                                              <a href="{{route('frontend.generates.build', $generate->id)}}" style="width:100%; height:225px; display:block; overflow:hidden;"> 
+                                               @elseif($generate  && $generate->content_type =='image' || $generate->content_type =='prompt' || $generate->content_type =='train')
+                                               <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i> {{ $generate->fal->model_name}}</span>
+                                              <a href="{{route('frontend.generates.build', ['model_id'=>$generate->fal_model_id, 'generate_id'=>$generate->id])}}" style="width:100%; height:225px; display:block; overflow:hidden;"> 
                                                 <img src="{{ $generate->image_url ?? '' }}" class="img-fluid image_{{$generate->id}} d-block mx-auto" alt="{{$generate->title}}" loading="lazy">
                                              </a> 
                                                   @else
@@ -29,14 +29,14 @@
                                             </div>
                                             <div class="col-md-12">
                                             <p class="py-2">
-                                                @if($generate->fal  && $generate->fal->model_type =='image')
+                                                @if($generate && $generate->content_type =='image' || $generate->content_type =='prompt' || $generate->content_type =='train')
                                                @php  $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
                                                
                                                     <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
-                                                    <a href="{{route('frontend.generates.build', $generate->id)}}" class="btn btn-default btn-xs"><i class="fas fa-random"></i> Convert</a>
+                                                    <a href="{{route('frontend.generates.build', ['model_id'=>$generate->fal_model_id, 'generate_id'=>$generate->id])}}" class="btn btn-default btn-xs"><i class="fas fa-random"></i> Convert</a>
 
 
-                                                @elseif($generate->fal  && $generate->fal->model_type =='video' || $generate->fal->model_type =='audio')
+                                                @elseif($generate && $generate->content_type =='video' || $generate->content_type =='audio')
                                                 
                                                 @php  $vid = App\Models\Fal::where('model_type', 'audio')->first(); @endphp
                                                
@@ -80,61 +80,74 @@
 @section('scripts')
 @parent
 <script>
+$(document).ready(function () {
+    $('.loading-gif').hide();
 
-$(function(){
-    $('.loading-gif').hide();   
+    if ($('.waiting').length > 0) {
+        setInterval(checkGenerationStatus, 5000);
+    }
 });
 
-if ($('.waiting').length > 0) {
-    setInterval(function() {
-        $('.waiting').each(function() {
+function checkGenerationStatus() {
+    $('.waiting').each(function () {
+        var $element = $(this);
+        var generateId = $element.data('id');
+        var $loader = $('.loader_' + generateId);
+        var $status = $('#status_' + generateId);
+        
+        $loader.show();
 
-            var generateId = $(this).data('id');
-            $('.loader_' + generateId).show();
-            $.ajax({
-                url: '{{ route('frontend.generates.status') }}',
-                method: 'POST',
-                data: { id: generateId },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.status === 'COMPLETED') {
-
-                        $('.waiting.generate_' + generateId).removeClass('waiting');
-                        $('.loader_' + generateId).hide();
-
-                        if (response.type=='video' || response.type=='audio') {
-
-                            $('.video_' + generateId).attr('src', response.video_url);
-                            $('.waiting.generate_' + generateId).show();
-
-                        } else if (response.type=='image') {
-                            console.log(response);
-                            $('.image_' + generateId).attr('src', response.image_url);
-                            $('.waiting.generate_' + generateId).show()
-
-                        }
-                        $('#status_' + generateId).text('COMPLETED');
-
-                    } else if (response.status === 'ERROR') {
-                        
-                        $('.waiting.generate_' + generateId).removeClass('waiting').addClass('error');
-                        $('#status_' + generateId).text('ERROR');
-
-                    } else if(response.status === 'IN_PROGRESS' || response.status === 'IN_QUEUE' || response.status === 'NEW') {
-                       
-                        $('#status_' + generateId).text('IN_PROGRESS');
-
-                    }
-                },
-                error: function() {
-                    console.log('Error fetching status for generate ID:', generateId);
-                }
-            });
+        $.ajax({
+            url: '{{ route('frontend.generates.status') }}',
+            method: 'POST',
+            data: { id: generateId },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                updateStatus($element, generateId, response);
+            },
+            error: function (xhr, status, error) {
+                handleError($element, generateId, xhr);
+            }
         });
-    }, 5000);
+    });
+}
+
+function updateStatus($element, generateId, response) {
+    var $loader = $('.loader_' + generateId);
+    var $status = $('#status_' + generateId);
+
+    if (response.status === 'COMPLETED') {
+        $element.removeClass('waiting');
+        $loader.hide();
+        $status.text('COMPLETED');
+
+        if (['video', 'audio'].includes(response.type)) {
+            $('.video_' + generateId).attr('src', response.video_url).show();
+        } else if (['image', 'prompt', 'train'].includes(response.type)) {
+            $('.image_' + generateId).attr('src', response.image_url).show();
+        }
+
+    } else if (response.status === 'ERROR') {
+        handleError($element, generateId, response);
+
+    } else if (['IN_PROGRESS', 'IN_QUEUE', 'NEW'].includes(response.status)) {
+        $status.text('IN_PROGRESS');
+    }
+}
+
+function handleError($element, generateId, response) {
+    var $loader = $('.loader_' + generateId);
+    var $status = $('#status_' + generateId);
+
+    $element.removeClass('waiting').addClass('error');
+    $status.text('ERROR');
+    $loader.hide();
+
+    // Extract and display error message if available
+    var errorMessage = response?.detail || 'An unknown error occurred.';
+    alert(errorMessage);
 }
 
 

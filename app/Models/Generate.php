@@ -40,9 +40,7 @@ class Generate extends Model
         'credit',
         'parent',
         'user_id',
-        'created_at',
-        'updated_at',
-        'deleted_at',
+   
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -70,4 +68,34 @@ class Generate extends Model
     {
         return $this->belongsTo(Fal::class, 'fal_model_id');
     }
+
+
+    public function imageTypes()
+    {
+        return ['prompt', 'train', 'background', 'video'];
+    }
+
+    public function videoTypes()
+    {
+        return ['video', 'audio', 'upscale'];
+    }
+    
+
+    public static $supportedTypes = ['prompt', 'image', 'video', 'audio', 'upscale', 'train', 'background'];
+
+
+    public function checkTypes($types) {
+
+        //Get all model types from Fal
+        $fals = Fal::get()->pluck('model_type')->toArray();
+    
+        //check if types value is in the fals array
+        if(in_array($types, $fals)){
+            return true;
+        } else {
+            return false;
+        }
+     }
+     
+
 }

@@ -46,22 +46,45 @@ class GenerateController extends Controller
 
     public function build(Request $request)
     {
+        //work on this user model supported types to iterate
         abort_if(Gate::denies('generate_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+        
+        $fal = Fal::where('id', $request->model_id)->first();
+        
+        
+        if (!$fal) {
+            abort(404, 'Payload template not found.');
+        }
 
+        if($fal->model_type==='train'){
         $generate = Generate::with(['train', 'user'])
         ->where('id', $request->generate_id)
         ->where('parent', null)
-        ->first();
+        ->first();  
+        } else {
+            $generate = Generate::with(['user'])
+            ->where('id', $request->generate_id)
+            ->where('parent', null)
+            ->first();       
+        }
 
+        if($fal->model_type==='train'){
         $childs = Generate::with(['train', 'user'])
         ->where('parent', $request->generate_id)
         ->orderBy('id', 'asc')
         ->get();
+        } else {
+            $childs = Generate::with(['user'])
+            ->where('parent', $request->generate_id)
+            ->orderBy('id', 'asc')
+            ->get();
+        }
 
 
-        $fals = Fal::get();
+        $enabled_fals = Fal::where('enabled', true)->get();
+        $gen = new Generate();
 
-        return view('frontend.generates.build', compact('generate', 'fals', 'childs'));
+        return view('frontend.generates.build', compact('generate', 'enabled_fals', 'childs', 'gen'));
     }
 
 
@@ -71,24 +94,23 @@ class GenerateController extends Controller
 
         $trains = Train::pluck('title', 'id')->prepend(trans('global.pleaseSelect'), '');
         $fals = Fal::find(request('model_id'));
-        $payloadTemplate = ModelPayload::where('model_type', $fals->model_type)->first();
+        $modelData = Fal::where('id', $request->model_id)->first();
 
-        if (!$payloadTemplate) {
+        if (!$modelData) {
             abort(404, 'Payload template not found.');
         }
 
-        $payloadDetails = json_decode($payloadTemplate->payload_template, true);
+        $payloadDetails = json_decode($modelData->payload, true);
         
         if($request->image_id){
         $existingImages = Generate::where('id', $request->image_id)->first();
         }  else {
             $existingImages = null;
         }
-
         $users = User::pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
 
 
-        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages', 'payloadDetails'));
+        return view('frontend.generates.create', compact('trains', 'users', 'fals', 'existingImages', 'payloadDetails', 'modelData'));
     }
 
     public function store(StoreGenerateRequest $request)
@@ -104,10 +126,9 @@ class GenerateController extends Controller
         } else {
             $audio_file_path = null;
         }*/
-
-        if($request->file('audio_mp3')){
+        if($request->file('audio_url')){
             //save to s3 storage and get url
-            $audio_file = $request->file('audio_mp3');
+            $audio_file = $request->file('audio_url');
             $audio_file_name = time() . '.' . $audio_file->getClientOriginalExtension();
             $audio_file_path = 'audio/' . $audio_file_name;
             \Storage::disk('s3')->put($audio_file_path, file_get_contents($audio_file), 'public');
@@ -125,7 +146,7 @@ class GenerateController extends Controller
         }
         
 
-
+        $generate = new Generate();
         $generate = Generate::create(
             [
                 'prompt' => $request->prompt ?? null,
@@ -134,7 +155,7 @@ class GenerateController extends Controller
                 'width' => $request->width ?? null,
                 'height' => $request->height ?? null,
                 'status' => 'NEW',
-                'content_type' => 'image' ?? null,
+                'content_type' => $request->content_type ?? null,
                 'response_url' => $request->response_url,
                 'status_url' => $request->status_url,
                 'cancel_url' => $request->cancel_url,
@@ -146,14 +167,16 @@ class GenerateController extends Controller
                 'parent' => $request->parent ?? null,
                 'inference' => $request->inference ?? null,
                 'user_id' => Auth::id(),
+                'seed' => $request->seed ?? null,
+                'credit' => $request->credit ?? null,
             ]
         );
-        if($request->fal_model_id == 2){
+        if($request->content_type == 'image' || $request->content_type == 'prompt' || $request->content_type == 'train'){
             $generates = Generate::where('user_id', Auth::id())->get();
             return redirect()->route('frontend.generates.index', compact('generates'));
 
         } else {
-        return redirect()->route('frontend.generates.build', ['generate_id' => $request->parent ]);
+        return redirect()->route('frontend.generates.build', ['generate_id' => $request->parent, 'model_id'=>$request->fal_model_id ]);
         }
     }
 
@@ -224,41 +247,52 @@ class GenerateController extends Controller
        
    
 
+        $gen = new Generate();
 
-        if($fal->model_type === 'image'){
+        if (in_array($fal->model_type, ['image', 'prompt'])) {
 
             $generate->image_url = $final_result['images'][0]['url'];
             $generate->status = "COMPLETED";
             $generate->save();
 
             $res = [
-                "image_url" => $final_result['images'][0]['url'],
-                "type" =>  $fal->model_type,
-                "status" => "COMPLETED"
+            "image_url" => $final_result['images'][0]['url'],
+            "type" =>  $fal->model_type,
+            "status" => "COMPLETED"
             ];
 
             return response()->json($res);
 
-        }elseif($fal->model_type === 'video' || $fal->model_type === 'audio' || $fal->model_type === 'upscale'){
+        }  elseif (in_array($fal->model_type, ['background'])) {
+
+            $generate->image_url = $final_result['image']['url'];
+            $generate->status = "COMPLETED";
+            $generate->save();
+
+            $res = [
+            "image_url" => $final_result['image']['url'],
+            "type" =>  $fal->model_type,
+            "status" => "COMPLETED"
+            ];
+
+            return response()->json($res);
+
+        } elseif (in_array($fal->model_type, ['video', 'upscale', 'audio'])) {
 
             $generate->video_url = $final_result['video']['url'];
             $generate->status = "COMPLETED";
             $generate->save();
 
             $res = [
-                "video_url" => $final_result['video']['url'],
-                "type" =>  $fal->model_type,
-                "status" => "COMPLETED"
+            "video_url" => $final_result['video']['url'],
+            "type" =>  $fal->model_type,
+            "status" => "COMPLETED"
             ];
 
             return response()->json($res);
         }
 
-       
-
-
-
-
+    
         return $res;
         
         } catch (Exception $e) {
@@ -280,6 +314,7 @@ class GenerateController extends Controller
         $generate = Generate::find($request->id);
         
         $client = new Client();
+        \Log::info($generate->status_url);
         try {
             // Make a GET request to check job status
             $response = $client->post($generate->status_url, [
@@ -324,4 +359,6 @@ class GenerateController extends Controller
         }
 
 }
+
+ 
 }

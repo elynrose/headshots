@@ -27,7 +27,7 @@ class StoreGenerateRequest extends FormRequest
                 'int',
             ],
             'audio_url' => [
-                'string',
+                'file',
                 'nullable',
             ],
             'image_url' => [

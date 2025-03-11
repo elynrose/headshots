@@ -9,9 +9,9 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-12">
-                                    @if($generate->fal && $generate->fal->model_type == 'image' || $generate->fal->model_type == 'upscale')
-                                        <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i></span>
-                                        <a href="{{ $generate->image_url ?? '' }}" style="width:100%; height:375px; display:block; overflow:hidden;">
+                                    @if($gen->checkTypes($generate->content_type))
+                                        <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i> {{ $generate->fal->model_name}}</span>
+                                        <a href="{{ $generate->image_url ?? '' }}" style="width:100%; max-height:500px; display:block;">
                                             <img src="{{ $generate->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$generate->id}} d-block mx-auto" alt="{{$generate->title}}" loading="lazy">
                                         </a>
                                     @else
@@ -20,19 +20,18 @@
                                 </div>
                                 <div class="col-md-12">
                                     <p class="py-2">
-                                        @if($generate->fal && $generate->fal->model_type == 'image')
-                                            @php $vid = App\Models\Fal::where('model_type', 'video')->first(); @endphp
-                                            <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.createWithParent', ['model_id' => $vid->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3)]) }}">
-                                                <i class="fas fa-video"></i> {{ _('Convert to Video') }}
-                                            </a>
-                                            <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-sm" download><i class="fas fa-download"></i></a>
-                                        @elseif($generate->fal && ($generate->fal->model_type == 'video' || $generate->fal->model_type == 'audio'))
-                                            @php $vid = App\Models\Fal::where('model_type', 'audio')->first(); @endphp
-                                            <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.createWithParent', ['model_id' => $vid->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3)]) }}">
-                                                <i class="fas fa-music"></i> {{ _('Add Lip Sync') }}
-                                            </a>
-                                            <a href="{{ $generate->video_url ?? '' }}" class="btn btn-default btn-sm" download><i class="fas fa-download"></i></a>
+ 
+                                        @if(in_array($generate->content_type, $gen->imageTypes()))
+                                        @foreach($gen->imageTypes() as $type)
+                                        @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
+                                        <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3)]) }}">
+                                            <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
+                                        </a>
+                                        @endforeach
                                         @endif
+
+                                        <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
+                                       
                                     </p>
                                     <p>
                                         <span class="small text-muted">
@@ -58,16 +57,16 @@
                     <div class="child col-md-12 @if($child->status=='NEW' || $child->status=='IN_QUEUE' || $child->status=='IN_PROGRESS') waiting @elseif($child->status=='COMPLETED' || $child->status=='ERROR') @endif generate_{{$child->id}}" data-id="{{ $child->id }}">
                         <div class="card shadow-sm mb-3">
                             <div class="card-body">
-                                <div class="row" style="min-height:350px;">
+                                <div class="row" style="min-height:500px;">
                                     <div class="col-md-12">
-                                        @if($child->fal && ($child->fal->model_type == 'video' || $child->fal->model_type == 'audio') || $child->fal->model_type == 'upscale')
-                                            <div class="loading-gif loader_{{$generate->id}} text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img width="50" src="{{asset('images/loader.gif')}}"></div>
-                                            <span class="badge badge-success" style="position:absolute; top:0;left:10px;z-index:10;"><i class="fas fa-video"></i></span>
-                                            <div class="loading-gif loader_{{$generate->id}} text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img width="50" src="{{asset('images/loader.gif')}}"></div>
-                                            <video src="{{$child->video_url ?? asset('/images/loading.mp4')}}" controls loop width="100%" height="480" class="videos video_{{ $child->id }}" @if($child->status!=='COMPLETED') style="display:none;" @endif></video>
-                                        @elseif($child->fal && $child->fal->model_type == 'image')
-                                            <span class="badge badge-warning" style="position:absolute; top:0;left:0;z-index:10;"><i class="fas fa-photo"></i></span>
-                                            <a href="{{ $child->image_url ?? '' }}" style="width:100%; height:225px; display:block; overflow:hidden;">
+                                    @if(in_array($generate->content_type, $gen->videoTypes()))
+                                    <div class="loading-gif loader_{{$child->id}} text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img width="50" src="{{asset('images/loader.gif')}}"></div>
+                                            <span class="badge badge-success" style="position:absolute; top:55px;left:10px;z-index:10;"><i class="fas fa-video"></i>  {{ $child->fal->model_name}}</span>
+                                            <div class="loading-gif loader_{{$child->id}} text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"><img width="50" src="{{asset('images/loader.gif')}}"></div>
+                                            <video src="{{$child->video_url }}" controls loop width="100%" height="500" class="videos video_{{ $child->id }}" @if($child->status!=='COMPLETED') style="display:none;" @endif></video>
+                                        @elseif(in_array($generate->content_type, $gen->imageTypes()))
+                                            <span class="badge badge-warning" style="position:absolute; top:55px;left:0;z-index:10;"><i class="fas fa-photo"></i>  {{ $child->fal->model_name}}</span>
+                                            <a href="{{ $child->image_url ?? '' }}" style="width:100%; height:500px; display:block; overflow:hidden;">
                                                 <img src="{{ $child->image_url ?? asset('images/loading.gif') }}" class="img-fluid image_{{$child->id}} d-block mx-auto" alt="{{$child->title}}" loading="lazy">
                                             </a>
                                         @else
@@ -76,57 +75,23 @@
                                     </div>
                                     <div class="col-md-12">
                                         <p class="py-2">
-                                        @php
-    $models = App\Models\Fal::whereIn('model_type', ['video', 'audio', 'upscale'])->get()->keyBy('model_type');
-    $parentId = Request::segment(3);
-@endphp
+                                            @php
+                                                $models = App\Models\Fal::whereIn('model_type', ['video', 'audio', 'upscale'])->get()->keyBy('model_type');
+                                                $parentId = Request::segment(3);
+                                            @endphp
 
-@if($child->fal)
-    @switch($child->fal->model_type)
-        @case('image')
-            @if(isset($models['video']))
-                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.createWithParent', [
-                    'model_id' => $models['video']->id,
-                    'image_id' => $child->id,
-                    'parent_id' => $generate_id
-                ]) }}">
-                    <i class="fas fa-video"></i> {{ __('Convert to Video') }}
-                </a>
-            @endif
-            <a href="{{ $child->image_url ?? '' }}" class="btn btn-default btn-sm" download>
-                <i class="fas fa-download"></i>
-            </a>
-            @break
-
-        @case('video')
-            @if(isset($models['audio']))
-                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.createWithParent', [
-                    'model_id' => $models['audio']->id,
-                    'image_id' => $child->id,
-                    'parent_id' => $parentId
-                ]) }}">
-                    <i class="fas fa-music"></i> {{ __('Add Lip Sync') }}
-                </a>
-            @endif
-
-            @if(isset($models['upscale']))
-                <a class="btn btn-default btn-sm" href="{{ route('frontend.generates.createWithParent', [
-                    'model_id' => $models['upscale']->id,
-                    'image_id' => $child->id,
-                    'parent_id' => $parentId
-                ]) }}">
-                    <i class="fas fa-expand"></i> {{ __('Upscale') }}
-                </a>
-            @endif
-
-            <a href="{{ $child->video_url ?? '' }}" class="btn btn-default btn-sm" download>
-                <i class="fas fa-download"></i>
-            </a>
-            @break
-    @endswitch
-@endif
-
-
+                                           
+                                                
+                                        @if(in_array($generate->content_type, $gen->imageTypes()))
+                                        @foreach($gen->videoTypes() as $type)
+                                        @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
+                                        <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $child->id, 'parent_id' => $child->parent ]) }}">
+                                            <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
+                                        </a>
+                                        @endforeach
+                                        @endif
+                                            
+                                            
                                         </p>
                                         <p>
                                             <span class="small text-muted">
@@ -211,7 +176,8 @@ $(function () {
             $('.waiting').each(function() {
                 var generateId = $(this).data('id');
                 var loaderId = $('.waiting').last().data('id');
-                $('.loader_' + loaderId).removeClass('hide');
+                $('.loading-gif, .loader_' + loaderId).removeClass('hide');
+
                 $.ajax({
                     url: '{{ route('frontend.generates.status') }}',
                     method: 'POST',
@@ -226,7 +192,7 @@ $(function () {
                             $('.waiting.generate_' + generateId).removeClass('waiting');
                             $('.loader_' + loaderId).addClass('hide');
 
-                            if (response.type === 'video' || response.type === 'audio') {
+                            if (response.type === 'video' || response.type === 'audio' || response.type === 'upscale') {
                                 var videoElement = $('.video_' + generateId);
                                 if (response.video_url) {
                                     var timestamp = new Date().getTime(); // Prevent caching issues
@@ -236,10 +202,10 @@ $(function () {
                                 } else {
                                     console.log("Error: Video URL is missing for ID:", generateId);
                                 }
-                            } else if (response.type === 'image') {
+                            } else if (response.type === 'image' || response.type === 'prompt' || response.type === 'train' || response.type === 'background') {
                                 $('.image_' + generateId).attr('src', response.image_url);
                                 $('.waiting.generate_' + generateId).show();
-                                $('.loader_' + generateId).hide();
+                                $('.loading-gif, .loader_' + generateId).hide();
                             }
                             $('#status_' + generateId).text('COMPLETED');
                         } else if (response.status === 'ERROR') {

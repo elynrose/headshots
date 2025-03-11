@@ -22,6 +22,10 @@ class Fal extends Model
         'model_name',
         'model_type',
         'base_url',
+        'payload',
+        'icon',
+        'enabled',
+        'file_type',
     ];
      
     //create a static function to get an array of all the models

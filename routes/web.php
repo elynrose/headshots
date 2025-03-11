@@ -85,13 +85,14 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     // Generate
     Route::delete('generates/destroy', 'GenerateController@massDestroy')->name('generates.massDestroy');
     Route::resource('generates', 'GenerateController')->except(['create']);
-    //Route::get('generate/create/{model_id}', 'GenerateController@create')->name('generates.createWithModel');
     Route::post('generates/status', 'GenerateController@status')->name('generates.status');
-    Route::get('generate/build/{generate_id}', 'GenerateController@build')->name('generates.build');
+    Route::get('generate/build/{generate_id}/{model_id}', 'GenerateController@build')->name('generates.build');
     Route::get('generates/create/{model_id}/{image_id}/{parent_id}', 'GenerateController@create')->name('generates.createWithParent');
     Route::get('generates/create/{model_id}', 'GenerateController@create')->name('generates.create');
+    Route::get('generates/new', 'GenerateController@new')->name('generates.new');
 
-
+    //Webhook
+    Route::get('/webhook', 'GenerateController@status')->name('webhook');
 
     // Credits
     Route::delete('credits/destroy', 'CreditsController@massDestroy')->name('credits.massDestroy');

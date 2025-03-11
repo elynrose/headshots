@@ -17,6 +17,10 @@ class CreateFalTable extends Migration
             $table->string('model_name');
             $table->string('model_type');
             $table->string('base_url');
+            $table->string('payload');
+            $table->string('icon');
+            $table->string('file_type')->nullable();
+            $table->boolean('enabled')->default(0);
             $table->timestamps();
         });
     }

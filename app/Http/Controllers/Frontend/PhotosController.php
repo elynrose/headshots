@@ -38,6 +38,12 @@ class PhotosController extends Controller
 
     public function store(StorePhotoRequest $request)
     {
+        //Check if user has more than 10 photos
+        $user = auth()->user();
+        $photos = Photo::where('user_id', $user->id)->get();
+        if ($photos->count() >= 10) {
+            return redirect()->route('frontend.photos.index')->with('error', 'You have reached the maximum number of photos allowed.');
+        }
         $photo = Photo::create($request->all());
 
         foreach ($request->input('photo', []) as $file) {
