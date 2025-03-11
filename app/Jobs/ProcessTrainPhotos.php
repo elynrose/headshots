@@ -154,7 +154,7 @@ class ProcessTrainPhotos implements ShouldQueue
 
         } catch (Exception $e) {
             //$train->status = "ERROR";
-            $train->update(['status' => 'ERROR']);
+            $train->update(['status' => 'IN_QUEUE']);
             \Log::error('Training job submission failed: ' . $e->getMessage());
         }
     }
