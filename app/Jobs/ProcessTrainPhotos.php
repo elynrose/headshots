@@ -92,15 +92,15 @@ class ProcessTrainPhotos implements ShouldQueue
             }
     
             // Upload ZIP file to S3 storage
-            Storage::disk('s3')->putFileAs('train_photos', new File($path), $zipFileName, ['visibility' => 'public']);
+            Storage::disk('cloud')->putFileAs('train_photos', new File($path), $zipFileName, ['visibility' => 'public']);
              
             // Generate file URL
             $key = $zipFileName;
-            $url = Storage::disk('s3')->url('train_photos/' . $key);
+            $url = Storage::disk('cloud')->url('train_photos/' . $key);
             \Log::info("ZIP file uploaded successfully. URL: " . $url);
             
             // Update model with the ZIP file URL and key
-            $this->model->update(['zipped_file_url' => $url, 'temporary_amz_url' => $key, 'file_size' => Storage::disk('s3')->size('train_photos/' . $key), 'status' => 'NEW']);
+            $this->model->update(['zipped_file_url' => $url, 'temporary_amz_url' => $key, 'file_size' => Storage::disk('cloud')->size('train_photos/' . $key), 'status' => 'NEW']);
             
             // Remove the local ZIP file after upload
             unlink($path);
