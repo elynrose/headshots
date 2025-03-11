@@ -92,7 +92,7 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     Route::get('generates/new', 'GenerateController@new')->name('generates.new');
 
     //Webhook
-    Route::get('/webhook', 'GenerateController@status')->name('webhook');
+    Route::get('/webhook', 'GenerateController@webhook')->name('webhook');
 
     // Credits
     Route::delete('credits/destroy', 'CreditsController@massDestroy')->name('credits.massDestroy');
