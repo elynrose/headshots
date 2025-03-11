@@ -275,7 +275,7 @@ class GenerateController extends Controller
         $generate = Generate::find($request->id);
 
         $client = new Client();
-        \Log::info($generate->status_url);
+
         try {
             $response = $client->post($generate->status_url, [
                 'headers' => [
@@ -319,7 +319,7 @@ class GenerateController extends Controller
     {
         $data = json_decode(file_get_contents('php://input'), true);
 
-        if (isset($data['request_id'])) {
+        if (isset($data)) {
             $generate = Generate::where('requestid', $data['requestid'])->first();
             \Log::info('From the webhook'.$generate);
             dd($generate);
