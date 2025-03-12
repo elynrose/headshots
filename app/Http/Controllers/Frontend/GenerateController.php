@@ -330,7 +330,7 @@ class GenerateController extends Controller
 
     public function webhook()
     {
-        $data = json_decode(file_get_contents(env('APP_URL').'/webhook'), true);
+        $data = json_decode(file_get_contents('php://input'), true);
         \Log::info('From the webhook'.$data);
         if (isset($data)) {
             $generate = Generate::where('requestid', $data['requestid'])->first();
