@@ -4,7 +4,7 @@
 <div class="container">
 
     <h3 class="text-center">{{ $modelData->title ?? 'Generate Content' }}</h3>
-    <p class="text-center mb-5 text-muted">{{ 'Provide the necessary details to proceed.' }}</p>
+    <p class="text-center mb-5 text-muted">{{ 'Provide the necessary details to proceed.' }}  @if($fals->model_type === 'prompt') Or use a <a href="/generates/create/2">trained model</a>  @endif</p>
 
     <div class="row justify-content-center">
         <div class="col-md-6">

@@ -9,11 +9,20 @@
             <div class="card">
                 <div class="card-body">
                     <div class="list-group">
+                        @if(!count($credits))
+                            <div class="list-group
+                            -item">
+                                <div class="text-center">
+                                    <h2 class="mb-1">0</h2>
+                                    <small>No credits purchased yet</small>
+                                </div>
+                            </div>
+                        @endif
                         @foreach($credits as $key => $credit)
                             <div class="list-group-item">
                                 <div class="text-center">
                                     <h2 class="mb-1">{{ $credit->points ?? '' }}</h2>
-                                    <small>Last purchased: {{ $credit->created_at ?? '' }}</small>
+                                    <small>Last purchased: {{ $credit->created_at->diffForHumans() ?? '' }}</small>
                                 </div>
                             </div>
                         @endforeach
