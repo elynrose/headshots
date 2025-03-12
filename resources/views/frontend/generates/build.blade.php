@@ -79,11 +79,12 @@
                                         <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
                                        
                                     </p>
+                                    <p><span class="badge badge-info"><span id="status_{{$generate->id}}">{{ $generate->status ?? '' }}</span></p>
+                                    <p class="small text-muted">{{ $generate->prompt ?? '' }}</p>
                                     <p>
                                         <span class="small text-muted">
                                             <strong>{{ trans('cruds.train.fields.created_at') }}:</strong> {{ $generate->created_at->diffForHumans() ?? '' }}<br>
-                                            <span class="badge badge-info"><span id="status_{{$generate->id}}">{{ $generate->status ?? '' }}</span></span><br>
-                                            <strong>{{ trans('cruds.generate.fields.credit') }}:</strong> {{ $generate->credit ?? '' }}
+                                            <strong>{{ trans('cruds.generate.fields.credit') }}:</strong> {{ $generate->credit ?? '0' }}
                                         </span>
                                     </p>
                                     @can('generate_delete')
@@ -98,10 +99,17 @@
                         </div>
                     </div>
                 </div>
-
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-9 col-sm-12">
+        <div class="row">
                 @foreach($childs as $key => $child)
-                    <div class="child col-md-12 @if($child->status=='NEW' || $child->status=='IN_QUEUE' || $child->status=='IN_PROGRESS') waiting @elseif($child->status=='COMPLETED' || $child->status=='ERROR') @endif generate_{{$child->id}}" data-id="{{ $child->id }}">
-                        <div class="card shadow-sm mb-3"  id="child_{{$child->id}}">
+                    <div class="child col-md-6 @if($child->status=='NEW' || $child->status=='IN_QUEUE' || $child->status=='IN_PROGRESS') waiting @elseif($child->status=='COMPLETED' || $child->status=='ERROR') @endif generate_{{$child->id}}" data-id="{{ $child->id }}">
+                        <div class="card shadow-sm mb-3 h-100" id="child_{{$child->id}}">
                             <div class="card-body">
                                 <div class="row" style="min-height:500px;">
                                     <div class="col-md-12">
@@ -155,11 +163,13 @@
                                         @endif  
 
                                         </p>
+                                        <span class="badge badge-info"><span id="status_{{$child->id}}">{{ $child->status ?? '' }}</span></span><br>
+
                                         <p>
-                                            <span class="small text-muted">
-                                                <strong>{{ trans('cruds.train.fields.created_at') }}:</strong> {{ $child->created_at->diffForHumans() ?? '' }}<br>
-                                                <span class="badge badge-info"><span id="status_{{$child->id}}">{{ $child->status ?? '' }}</span></span><br>
-                                                <strong>{{ trans('cruds.generate.fields.credit') }}:</strong> {{ $child->credit ?? '' }}<br>
+                                            
+                                                <p class="text-muted small">{{$child->prompt ?? ''}}</p>
+                                              <span class="small text-muted">  <strong>{{ trans('cruds.train.fields.created_at') }}:</strong> {{ $child->created_at->diffForHumans() ?? '' }}<br>
+                                                <strong>{{ trans('cruds.generate.fields.credit') }}:</strong> {{ $child->credit ?? '0' }}<br>
                                                 <span><span id="queue_{{$child->id}}">Queue position: {{ $child->queue_position ?? 'Waiting...' }}</span></span><br>
 
                                             </span>
