@@ -58,14 +58,23 @@
                                 <div class="col-md-12">
                                     <p class="py-2">
  
-                                        @if(in_array($generate->content_type, $gen->imageTypes()))
-                                        @foreach($gen->videoTypes() as $type)
-                                        @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
-                                        <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3)]) }}">
-                                            <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
-                                        </a>
-                                        @endforeach
-                                        @endif
+                                    @if(in_array($generate->content_type, $gen->videoTypes()))
+                                     
+                                     @foreach($gen->videoTypes() as $type)
+                                     @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
+                                     <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3) ]) }}">
+                                         <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
+                                     </a>
+                                     @endforeach
+                                     @elseif(in_array($generate->content_type, $gen->imageTypes()))
+                                     @foreach($gen->imageTypes() as $type)
+                                     @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
+                                     <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3) ]) }}">
+                                         <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
+                                     </a>
+                                     @endforeach
+                                    
+                                     @endif
 
                                         <a href="{{ $generate->image_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
                                        
@@ -119,14 +128,24 @@
 
                                            
                                                 
-                                        @if(in_array($generate->content_type, $gen->imageTypes()))
+                                        @if($generate->content_type=='video' || $generate->content_type=='audio' || $generate->content_type=='upscale')
+                                     
+                                        @foreach($gen->imageTypes() as $type)
+                                        @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
+                                        <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $child->id, 'parent_id' => $child->parent ]) }}">
+                                            <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
+                                        </a>
+                                        @endforeach
+                                        @elseif($generate->content_type=='image' || $generate->content_type=='prompt' || $generate->content_type=='train' || $generate->content_type=='background')
                                         @foreach($gen->videoTypes() as $type)
                                         @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
                                         <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $child->id, 'parent_id' => $child->parent ]) }}">
                                             <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
                                         </a>
                                         @endforeach
+                                       
                                         @endif
+                                        
                                         @if(in_array($generate->content_type, $gen->imageTypes()))
                                         <a href="{{ $child->video_url ?? '' }}" class="btn btn-default btn-xs" download><i class="fas fa-download"></i></a>
                                         @endif  
