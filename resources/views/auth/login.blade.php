@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('content')
-<div class="row justify-content-center">
+<div class="row no-gutters">
+    <div class="col-md-6 d-none d-md-block floating1">
+    </div>
     <div class="col-md-6">
         <div class="card mx-4">
             <div class="card-body p-4">

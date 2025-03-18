@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Fal;
+use App\Models\ModelPayload;
 use Gate;
 use Illuminate\Foundation\Http\FormRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-class MassDestroyFalRequest extends FormRequest
+class MassDestroyModelPayloadRequest extends FormRequest
 {
     public function authorize()
     {
-        abort_if(Gate::denies('fal_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+        abort_if(Gate::denies('model_payload_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         return true;
     }
@@ -20,7 +20,7 @@ class MassDestroyFalRequest extends FormRequest
     {
         return [
             'ids'   => 'required|array',
-            'ids.*' => 'exists:fals,id',
+            'ids.*' => 'exists:model_payloads,id',
         ];
     }
 }

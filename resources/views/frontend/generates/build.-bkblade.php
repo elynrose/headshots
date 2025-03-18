@@ -57,6 +57,7 @@
                                 </div>
                                 <div class="col-md-12">
                                     <p class="py-2">
+ 
                                     @if(in_array($generate->content_type, $gen->imageTypes()))
                                      
                                      @foreach($gen->videoTypes() as $type)
@@ -66,7 +67,7 @@
                                      </a>
                                      @endforeach
                                      @elseif(in_array($generate->content_type, $gen->imageTypes()))
-                                     @foreach($gen->imageTypes() as $type)
+                                     @foreach($gen->videoTypes() as $type)
                                      @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
                                      <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $generate->id, 'parent_id' => Request::segment(3) ]) }}">
                                          <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}
@@ -144,7 +145,7 @@
                                         </a>
                                         @endforeach
                                         @elseif($generate->content_type=='image' || $generate->content_type=='prompt' || $generate->content_type=='train' || $generate->content_type=='background')
-                                        @foreach($gen->imageTypes() as $type)
+                                        @foreach($gen->videoTypes() as $type)
                                         @php  $fal = App\Models\Fal::where('model_type', $type)->first(); @endphp
                                         <a class="btn btn-default btn-xs" href="{{ route('frontend.generates.createWithParent', ['model_id' => $fal->id, 'image_id' => $child->id, 'parent_id' => $child->parent ]) }}">
                                             <i class="fas {{ $fal->icon ?? 'fa-cog' }}"></i> {{ $fal->title }}

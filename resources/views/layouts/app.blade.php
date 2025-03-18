@@ -19,10 +19,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet" />
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet" />
     @yield('styles')
+ 
 </head>
 
 <body class="header-fixed sidebar-fixed aside-menu-fixed aside-menu-hidden login-page">
-    <div class="c-app flex-row align-items-center">
+    <div class="c-app flex-row align-items-center" style="background-image: url({{ asset('images/space.jpg')}}); background-size: cover; height: 300px; background-color:#000; background-position:10px -100px; animation: scrollBackground 30s linear infinite;">
         <div class="container">
             @yield("content")
         </div>

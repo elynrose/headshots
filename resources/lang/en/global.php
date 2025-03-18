@@ -1,9 +1,6 @@
 <?php
 
 return [
-    'generate' => 'Generate ',
-    'advanced_mode' =>          'Advanced Settings',
-    'upload'                    => 'Upload',
     'actions'                        => 'Actions',
     'add'                            => 'Add',
     'allRightsReserved'              => 'All rights reserved.',

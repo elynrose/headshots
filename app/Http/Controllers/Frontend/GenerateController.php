@@ -76,9 +76,10 @@ class GenerateController extends Controller
         }
 
         $enabled_fals = Fal::where('enabled', true)->get();
+        $fal = Fal::where('id', $request->model_id)->first();
         $gen = new Generate();
 
-        return view('frontend.generates.build', compact('generate', 'enabled_fals', 'childs', 'gen'));
+        return view('frontend.generates.build', compact('generate', 'enabled_fals', 'childs', 'gen', 'fal'));
     }
 
     public function create(Request $request)

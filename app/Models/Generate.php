@@ -72,12 +72,12 @@ class Generate extends Model
 
     public function imageTypes()
     {
-        return ['prompt',  'background','train'];
+        return ['video', 'upscale', 'audio', 'prompt'];
     }
 
     public function videoTypes()
     {
-        return ['video', 'audio', 'upscale'];
+        return ['video', 'background'];
     }
     
 
@@ -97,5 +97,19 @@ class Generate extends Model
         }
      }
      
-
+     function checkFileType($filePath) {
+        // Get the file extension
+        $fileExtension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+    
+        // Generate the appropriate HTML
+        if (in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif'])) {
+            return 'image';
+        } elseif ($fileExtension === 'mp4') {
+           return 'video';
+        } elseif ($fileExtension === 'mp3') {
+            return 'audio';
+        } else {
+            return 'unsupported';
+        }
+    }
 }

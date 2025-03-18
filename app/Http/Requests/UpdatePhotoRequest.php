@@ -24,10 +24,6 @@ class UpdatePhotoRequest extends FormRequest
             'photo.*' => [
                 'required',
             ],
-            'url' => [
-                'string',
-                'nullable',
-            ],
             'user_id' => [
                 'required',
                 'integer',

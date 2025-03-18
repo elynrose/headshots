@@ -40,6 +40,15 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     Route::delete('payments/destroy', 'PaymentsController@massDestroy')->name('payments.massDestroy');
     Route::resource('payments', 'PaymentsController');
 
+    // Fal
+    Route::delete('fals/destroy', 'FalController@massDestroy')->name('fals.massDestroy');
+    Route::resource('fals', 'FalController');
+
+    // Model Payloads
+    Route::delete('model-payloads/destroy', 'ModelPayloadsController@massDestroy')->name('model-payloads.massDestroy');
+    Route::resource('model-payloads', 'ModelPayloadsController');
+
+
     // User Alerts
     Route::delete('user-alerts/destroy', 'UserAlertsController@massDestroy')->name('user-alerts.massDestroy');
     Route::get('user-alerts/read', 'UserAlertsController@read');
@@ -93,6 +102,15 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
 
     //Webhook
     Route::get('/webhook', 'GenerateController@webhook')->name('webhook');
+
+    // Fal
+    Route::delete('fals/destroy', 'FalController@massDestroy')->name('fals.massDestroy');
+    Route::resource('fals', 'FalController');
+
+    // Model Payloads
+    Route::delete('model-payloads/destroy', 'ModelPayloadsController@massDestroy')->name('model-payloads.massDestroy');
+    Route::resource('model-payloads', 'ModelPayloadsController');
+
 
     // Credits
     Route::delete('credits/destroy', 'CreditsController@massDestroy')->name('credits.massDestroy');

@@ -204,3 +204,28 @@ a, a.link, a.link:hover {
 .hide{
     display: none!important;
 }
+
+
+.floating1 {
+    animation: floating 3s ease-in-out infinite;
+}
+.floating2 {
+    animation: floating 4s ease-in-out infinite;
+}
+.floating3 {
+    animation: floating 2s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+

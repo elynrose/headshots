@@ -192,6 +192,46 @@ class PermissionsTableSeeder extends Seeder
             ],
             [
                 'id'    => 46,
+                'title' => 'fal_create',
+            ],
+            [
+                'id'    => 47,
+                'title' => 'fal_edit',
+            ],
+            [
+                'id'    => 48,
+                'title' => 'fal_show',
+            ],
+            [
+                'id'    => 49,
+                'title' => 'fal_delete',
+            ],
+            [
+                'id'    => 50,
+                'title' => 'fal_access',
+            ],
+            [
+                'id'    => 51,
+                'title' => 'model_payload_create',
+            ],
+            [
+                'id'    => 52,
+                'title' => 'model_payload_edit',
+            ],
+            [
+                'id'    => 53,
+                'title' => 'model_payload_show',
+            ],
+            [
+                'id'    => 54,
+                'title' => 'model_payload_delete',
+            ],
+            [
+                'id'    => 55,
+                'title' => 'model_payload_access',
+            ],
+            [
+                'id'    => 56,
                 'title' => 'profile_password_edit',
             ],
         ];

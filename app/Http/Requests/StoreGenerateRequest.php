@@ -20,33 +20,11 @@ class StoreGenerateRequest extends FormRequest
             'train_id' => [
                 'integer',
             ],
-            'prompt' => [
-                'string',
-                'nullable',],
-            'fal_model_id' => [
-                'int',
-            ],
-            'audio_url' => [
-                'file',
-                'nullable',
-            ],
-            'image_url' => [
-                'string',
-                'nullable',
-            ],
-            'video_url' => [
-                'string',
-                'nullable',
-            ],
             'width' => [
                 'nullable',
                 'integer',
                 'min:-2147483648',
                 'max:2147483647',
-            ],
-            'requestid' => [
-                'string',
-                'nullable',
             ],
             'height' => [
                 'nullable',
@@ -56,22 +34,6 @@ class StoreGenerateRequest extends FormRequest
             ],
             'status' => [
                 'string',
-                'nullable',
-            ],
-            'response_url' => [
-                'string',
-                'nullable',
-            ],
-            'status_url' => [
-                'string',
-                'nullable',
-            ],
-            'cancel_url' => [
-                'string',
-                'nullable',
-            ],
-            'queue_position' => [
-                'integer',
                 'nullable',
             ],
             'content_type' => [
@@ -91,10 +53,6 @@ class StoreGenerateRequest extends FormRequest
                 'integer',
                 'min:-2147483648',
                 'max:2147483647',
-            ],
-            'parent' => [
-                'integer',
-                'nullable',
             ],
             'user_id' => [
                 'required',

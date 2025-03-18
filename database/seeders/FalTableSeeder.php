@@ -5,24 +5,25 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+
 class FalTableSeeder extends Seeder
 {
     public function run()
     {
         DB::table('fal')->insert([
             [
-            'id' => 1,
-            'title' => 'Generate from Prompt',
-            'model_name' => 'minimax-image',
-            'model_type' => 'prompt',
-            'base_url' => 'https://queue.fal.run/fal-ai/minimax-image',
-            'payload' => '{"prompt":"{prompt}"}',
-            'icon' => 'fa-pen',
-            'enabled' => 0,
-            'file_type' => 'image',
-            'created_at' => NULL,
-            'updated_at' => NULL,
-            ],
+                'id' => 1,
+                'title' => 'Generate Image from Prompt',
+                'model_name' => 'flux-lora',
+                'model_type' => 'image',
+                'base_url' => 'https://queue.fal.run/fal-ai/flux-lora',
+                'payload' => '{"prompt":"prompt"}',
+                'icon' => 'fa-pen',
+                'enabled' => 0,
+                'file_type' => 'image',
+                'created_at' => NULL,
+                'updated_at' => NULL,
+                ],
             [
             'id' => 2,
             'title' => 'Generate from Model',
@@ -75,21 +76,9 @@ class FalTableSeeder extends Seeder
             'created_at' => '2025-03-05 22:58:12',
             'updated_at' => NULL,
             ],
+      
             [
-            'id' => 16,
-            'title' => 'Generate Image from Prompt',
-            'model_name' => 'flux-lora',
-            'model_type' => 'image',
-            'base_url' => 'https://queue.fal.run/fal-ai/flux-lora',
-            'payload' => '{"prompt":"prompt"}',
-            'icon' => 'fa-pen',
-            'enabled' => 0,
-            'file_type' => 'image',
-            'created_at' => NULL,
-            'updated_at' => NULL,
-            ],
-            [
-            'id' => 17,
+            'id' => 6,
             'title' => 'Remove Image Background',
             'model_name' => 'remove-background',
             'model_type' => 'background',

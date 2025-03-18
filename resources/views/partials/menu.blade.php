@@ -117,6 +117,26 @@
                 </a>
             </li>
         @endcan
+        @can('fal_access')
+            <li class="c-sidebar-nav-item">
+                <a href="{{ route("admin.fals.index") }}" class="c-sidebar-nav-link {{ request()->is("admin/fals") || request()->is("admin/fals/*") ? "c-active" : "" }}">
+                    <i class="fa-fw fab fa-adn c-sidebar-nav-icon">
+
+                    </i>
+                    {{ trans('cruds.fal.title') }}
+                </a>
+            </li>
+        @endcan
+        @can('model_payload_access')
+            <li class="c-sidebar-nav-item">
+                <a href="{{ route("admin.model-payloads.index") }}" class="c-sidebar-nav-link {{ request()->is("admin/model-payloads") || request()->is("admin/model-payloads/*") ? "c-active" : "" }}">
+                    <i class="fa-fw fas fa-code c-sidebar-nav-icon">
+
+                    </i>
+                    {{ trans('cruds.modelPayload.title') }}
+                </a>
+            </li>
+        @endcan
         @if(file_exists(app_path('Http/Controllers/Auth/ChangePasswordController.php')))
             @can('profile_password_edit')
                 <li class="c-sidebar-nav-item">

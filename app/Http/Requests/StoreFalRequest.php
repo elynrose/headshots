@@ -7,25 +7,13 @@ use Gate;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Response;
 
-
-
 class StoreFalRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
-        return true;
+        return Gate::allows('fal_create');
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
         return [
@@ -33,10 +21,22 @@ class StoreFalRequest extends FormRequest
                 'string',
                 'required',
             ],
+            'model_name' => [
+                'string',
+                'required',
+            ],
             'model_type' => [
                 'string',
                 'required',
-            ]
+            ],
+            'base_url' => [
+                'string',
+                'nullable',
+            ],
+            'icon' => [
+                'string',
+                'nullable',
+            ],
         ];
     }
 }

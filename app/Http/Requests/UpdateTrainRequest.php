@@ -18,38 +18,16 @@ class UpdateTrainRequest extends FormRequest
     {
         return [
             'requestid' => [
-                'string',
                 'nullable',
+                'integer',
+                'min:-2147483648',
+                'max:2147483647',
             ],
             'title' => [
                 'string',
                 'required',
             ],
             'status' => [
-                'string',
-                'nullable',
-            ],
-            'zipped_file_url' => [
-                'string',
-                'nullable',
-            ],
-            'response_url' => [
-                'string',
-                'nullable',
-            ],
-            'status_url' => [
-                'string',
-                'nullable',
-            ],
-            'cancel_url' => [
-                'string',
-                'nullable',
-            ],
-            'queue_position' => [
-                'integer',
-                'nullable',
-            ],
-            'temporary_amz_url' => [
                 'string',
                 'nullable',
             ],

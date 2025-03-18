@@ -4,26 +4,25 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFalTable extends Migration
+class CreateFalsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('fal', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('title');
             $table->string('model_name');
             $table->string('model_type');
-            $table->string('base_url');
-            $table->string('payload');
-            $table->string('icon');
+            $table->string('base_url')->nullable();
+            $table->longText('payload')->nullable();
+            $table->string('icon')->nullable();
+            $table->boolean('enabled')->default(0)->nullable();
             $table->string('file_type')->nullable();
-            $table->boolean('enabled')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
+
 
     /**
      * Reverse the migrations.

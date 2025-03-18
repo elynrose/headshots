@@ -12,11 +12,12 @@ return new class extends Migration
     public function up()
     {
         Schema::create('model_payloads', function (Blueprint $table) {
-            $table->id();
-            $table->string('model_type')->unique();
-            $table->string('file_type');
-            $table->json('payload_template');
+            $table->bigIncrements('id');
+            $table->string('model_type');
+            $table->longText('payload_template')->nullable();
+            $table->string('file_type')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
     

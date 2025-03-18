@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use \DateTimeInterface;
+
 
 class Fal extends Model
 {
@@ -11,13 +13,13 @@ class Fal extends Model
 
     public $table = 'fal';
 
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
+    public const FILE_TYPE_SELECT = [
+        'audio' => 'Audio',
+        'image' => 'Image',
+        'video' => 'Video',
     ];
 
-   protected $fillable = [
+    protected $fillable = [
         'title',
         'model_name',
         'model_type',
@@ -26,7 +28,17 @@ class Fal extends Model
         'icon',
         'enabled',
         'file_type',
+        'created_at',
+        'updated_at',
+        'deleted_at',
     ];
+
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+    
      
     //create a static function to get an array of all the models
     public function getModelUrl($name)
