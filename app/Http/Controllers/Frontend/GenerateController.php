@@ -34,6 +34,7 @@ class GenerateController extends Controller
 
         $generates = Generate::with(['train', 'user'])
             ->where('parent', null)
+            ->where('user_id', Auth::id())
             ->orderBy('id', 'desc')->paginate(9);
 
         $fals = Fal::get();

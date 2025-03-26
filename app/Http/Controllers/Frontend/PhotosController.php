@@ -13,6 +13,7 @@ use Gate;
 use Illuminate\Http\Request;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class PhotosController extends Controller
 {
@@ -22,7 +23,9 @@ class PhotosController extends Controller
     {
         abort_if(Gate::denies('photo_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $photos = Photo::with(['user', 'media'])->get();
+        $photos = Photo::with(['user', 'media'])
+        ->where('user_id', Auth::id())
+        ->get();
 
         return view('frontend.photos.index', compact('photos'));
     }
