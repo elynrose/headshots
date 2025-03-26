@@ -220,12 +220,16 @@ class GenerateController extends Controller
 
             $final_result = json_decode($final_response->getBody(), true);
 
+
             $gen = new Generate();
 
             if (in_array($fal->model_type, ['image', 'prompt'])) {
+
                 $generate->image_url = $final_result['images'][0]['url'];
                 $generate->status = "COMPLETED";
                 $generate->save();
+
+                $this->deductCredits($fal->model_type);
 
                 $res = [
                     "image_url" => $final_result['images'][0]['url'],
@@ -234,10 +238,13 @@ class GenerateController extends Controller
                 ];
 
                 return response()->json($res);
+
             } elseif (in_array($fal->model_type, ['background'])) {
                 $generate->image_url = $final_result['image']['url'];
                 $generate->status = "COMPLETED";
                 $generate->save();
+
+                $this->deductCredits($fal->model_type);
 
                 $res = [
                     "image_url" => $final_result['image']['url'],
@@ -252,6 +259,8 @@ class GenerateController extends Controller
                 $generate->status = "COMPLETED";
                 $generate->save();
 
+                $this->deductCredits($fal->model_type);
+
                 $res = [
                     "video_url" => $final_result['video']['url'],
                     "type" => $fal->model_type,
@@ -259,10 +268,13 @@ class GenerateController extends Controller
                 ];
 
                 return response()->json($res);
+
             }elseif (in_array($fal->model_type, ['train'])) {
                 $generate->image_url = $final_result['images'][0]['url'];
                 $generate->status = "COMPLETED";
                 $generate->save();
+
+                $this->deductCredits($fal->model_type);
 
                 $res = [
                     "image_url" => $final_result['images'][0]['url'],
@@ -289,7 +301,15 @@ class GenerateController extends Controller
         $generate = Generate::find($request->id);
 
         $client = new Client();
+        if(empty($generate->status_url)){
+            \Log::info('Url is not available');
+            //Delete this request
+            $generate->status = 'ERROR';
+            $generate->save();
+            $generate->delete();
 
+            return false;
+        }
         try {
             $response = $client->post($generate->status_url, [
                 'headers' => [
@@ -339,5 +359,21 @@ class GenerateController extends Controller
             dd($generate);
         }
 
+        
+    }
+
+    public function deductCredits($type){
+        //Check users credit balance
+
+        $credit = Credit::where('email', Auth::user()->email)->first();
+        if (!$credit) {
+            return false;
+        }
+        if ($credit->points < env($type)) {
+            return false;
+        }
+        //Deduct credits
+        $credit = $credit->points - env($type);
+        $credit->save();
     }
 }

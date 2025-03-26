@@ -131,6 +131,7 @@ function updateStatus($element, generateId, response) {
 
     } else if (response.status === 'ERROR') {
         handleError($element, generateId, response);
+        location.reload();
 
     } else if (['IN_PROGRESS', 'IN_QUEUE', 'NEW'].includes(response.status)) {
         $status.text('IN_PROGRESS');
@@ -146,7 +147,7 @@ function handleError($element, generateId, response) {
     $loader.hide();
 
     // Extract and display error message if available
-    var errorMessage = response?.detail || 'An unknown error occurred.';
+    var errorMessage = response?.detail || 'An unknown error occurred. Please check your credit balance or try again.';
     alert(errorMessage);
 }
 

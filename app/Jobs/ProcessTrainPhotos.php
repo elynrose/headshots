@@ -17,6 +17,8 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use App\Models\Credit;
+
 
 
 
@@ -150,9 +152,15 @@ class ProcessTrainPhotos implements ShouldQueue
             $train->response_url = $responseData['response_url'] ?? null;
             $train->cancel_url = $responseData['cancel_url'] ?? null;
             $train->queue_position = $responseData['queue_position'] ?? null;
-            $train->save();           
+            $train->save();  
+            
+            //Deduce Credits
+            $credits = Credit::where('email', Auth::user()->email)->first();
+            if ($credits) {
+                $credits->credit = $credits->points - env('FIXED_COST'); // Deduct 1 credit
+                $credits->save();
             }
-
+        } 
         } catch (Exception $e) {
             //$train->status = "ERROR";
             $train->update(['status' => 'IN_QUEUE']);

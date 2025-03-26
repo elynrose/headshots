@@ -10,7 +10,7 @@ class CreateCreditsTable extends Migration
     {
         Schema::create('credits', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('points');
+            $table->decimal('points', 8, 4);
             $table->string('email')->unique();
             $table->timestamps();
             $table->softDeletes();

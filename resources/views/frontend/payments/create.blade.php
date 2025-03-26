@@ -21,7 +21,7 @@
                                 <li>20 Photos</li>
                             </ul>
                             <h1 class="card-text mt-5 mb-3">$15</h1>
-                            <p><a href="#" class="btn btn-dark">Buy Credits</a>
+                            <p><a href="/credits/basic/" class="btn btn-dark">Buy Credits</a>
                             </p>
                         </div>
                     </div>
