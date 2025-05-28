@@ -41,14 +41,28 @@ class FormGenerator extends Model
                           $html .= $this->displayMedia($generate[$key]);
                       }
                       if ($key === 'prompt') {
-                          $html .= "<textarea name='{$key}' id='{$key}' class='form-control'></textarea>";
+                          $html .= "<div class='mb-6'>
+                              <label for='{$key}' class='block text-sm font-medium text-gray-700 mb-2'>Enter your prompt</label>
+                              <textarea 
+                                  name='{$key}' 
+                                  id='{$key}' 
+                                  rows='4'
+                                  class='w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+                                  placeholder='Describe what you want to generate...'></textarea>
+                          </div>";
                       } elseif($key === 'audio_url') {
-                          $html .= "<button type='button' class='btn btn-primary' onclick=\"document.getElementById('{$key}').click();\">Upload Audio</button>";
-                          $html .= "<input type='file' name='{$key}' id='{$key}' class='form-control' style='display:none;'>";
+                          $html .= "<div class='mb-6'>
+                              <button type='button' 
+                                      class='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                                      onclick=\"document.getElementById('{$key}').click();\">
+                                  <i class='fas fa-upload mr-2'></i> Upload Audio
+                              </button>
+                              <input type='file' name='{$key}' id='{$key}' class='hidden' accept='audio/*'>
+                          </div>";
                       } elseif($key === 'video_url' && !empty($generate[$key])) {
-                          $html .= "<input type='hidden' name='{$key}' value='{$generate[$key]}' id='{$key}' class='form-control'>";
+                          $html .= "<input type='hidden' name='{$key}' value='{$generate[$key]}' id='{$key}'>";
                       } elseif($key === 'image_url' && !empty($generate[$key])) {
-                          $html .= "<input type='hidden' name='{$key}' value='{$generate[$key]}' id='{$key}' class='form-control'>";
+                          $html .= "<input type='hidden' name='{$key}' value='{$generate[$key]}' id='{$key}'>";
                       }
                       $html .= "</div>";
                  }
