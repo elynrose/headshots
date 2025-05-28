@@ -72,12 +72,12 @@ class Generate extends Model
 
     public function imageTypes()
     {
-        return ['video', 'upscale', 'audio', 'prompt'];
+        return ['image', 'prompt', 'train', 'background'];
     }
 
     public function videoTypes()
     {
-        return ['video', 'background'];
+        return ['video', 'audio', 'upscale'];
     }
     
 

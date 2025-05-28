@@ -139,3 +139,7 @@ Route::group(['namespace' => 'Auth', 'middleware' => ['auth', '2fa']], function 
         Route::get('two-factor/resend', 'TwoFactorController@resend')->name('twoFactor.resend');
     }
 });
+Route::post('generate/webhook', 'GenerateController@webhook')->name('generates.webhook');
+
+// Broadcasting Routes
+Broadcast::routes(['middleware' => ['web', 'auth']]);
