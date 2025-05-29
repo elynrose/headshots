@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY - timeSinceLastRequest));
         }
         lastRequestTime = Date.now();
-    }
+}
 
     function showLoading(element) {
         const generateId = element.dataset.id;
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
-            }
+}
 
             const data = await response.json();
 
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!imageElement) {
             return;
-        }
+      }
 
         if (!data.image_url) {
             return;

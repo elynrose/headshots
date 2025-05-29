@@ -170,7 +170,7 @@
                                      class="w-full h-full object-cover image_{{$child->id}}" 
                                      alt="{{$child->title}}" 
                                      loading="lazy">
-                            </a>
+                                            </a>
                                         @endif
                                     </div>
 
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({ id: generateId })
-            });
+    });
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!hasValidMedia(element)) {
                     console.log('Media not yet loaded for ID:', generateId, 'continuing to poll');
                 return;
-                }
+            }
             } else if (data.status === 'ERROR') {
                 console.log('Generation error for ID:', generateId);
                 handleErrorStatus(element, generateId, data);
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleVideoContent(element, generateId, data) {
         console.log('Handling video content for ID:', generateId, 'Data:', data);
         const videoElement = document.querySelector('.video_' + generateId);
-        
+
         if (!videoElement) {
             console.error('Video element not found for ID:', generateId);
             showToast('error', 'Video element not found');
@@ -580,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
         element.classList.add('error');
         document.querySelectorAll('.loading-gif, .loader_' + generateId).forEach(el => el.style.display = 'none');
         showToast('error', data.error || 'Generation failed. Please try again.');
-    }
+                            }
 
     function handleInProgressStatus(element, generateId) {
         console.log('Generation in progress for ID:', generateId);
