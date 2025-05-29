@@ -71,7 +71,7 @@
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Total Models</dt>
                             <dd class="flex items-baseline">
-                                <div class="text-2xl font-semibold text-gray-900">{{ $trains->count() }}</div>
+                                <div class="text-2xl font-semibold text-gray-900">{{ $trains->total() }}</div>
                             </dd>
                         </dl>
                     </div>
@@ -120,17 +120,17 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($trains as $train)
-                            <tr x-show="isVisible('{{ $train->status }}', '{{ strtolower($train->name) }}')">
+                            <tr x-bind:class="{ 'hidden': !isVisible('{{ $train->status }}', '{{ strtolower($train->title) }}') }">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-10 w-10">
                                             <img class="h-10 w-10 rounded-full" 
-                                                 src="{{ $train->image_url ?? asset('images/default-model.png') }}" 
-                                                 alt="{{ $train->name }}">
+                                                 src="{{ asset('images/default-model.png') }}" 
+                                                 alt="{{ $train->title }}">
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $train->name }}</div>
-                                            <div class="text-sm text-gray-500">{{ $train->description }}</div>
+                                            <div class="text-sm font-medium text-gray-900">{{ $train->title }}</div>
+                                            <div class="text-sm text-gray-500">{{ $train->status }}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -190,7 +190,47 @@
 
             @if($trains->hasPages())
                 <div class="mt-4">
-                    {{ $trains->links() }}
+                    <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+                        <div class="-mt-px flex w-0 flex-1">
+                            @if($trains->onFirstPage())
+                                <span class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500">
+                                    <i class="fas fa-chevron-left mr-3"></i>
+                                    Previous
+                                </span>
+                            @else
+                                <a href="{{ $trains->previousPageUrl() }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                                    <i class="fas fa-chevron-left mr-3"></i>
+                                    Previous
+                                </a>
+                            @endif
+                        </div>
+                        <div class="hidden md:-mt-px md:flex">
+                            @foreach($trains->getUrlRange(1, $trains->lastPage()) as $page => $url)
+                                @if($page == $trains->currentPage())
+                                    <span class="inline-flex items-center border-t-2 border-indigo-500 px-4 pt-4 text-sm font-medium text-indigo-600">
+                                        {{ $page }}
+                                    </span>
+                                @else
+                                    <a href="{{ $url }}" class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                        <div class="-mt-px flex w-0 flex-1 justify-end">
+                            @if($trains->hasMorePages())
+                                <a href="{{ $trains->nextPageUrl() }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                                    Next
+                                    <i class="fas fa-chevron-right ml-3"></i>
+                                </a>
+                            @else
+                                <span class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500">
+                                    Next
+                                    <i class="fas fa-chevron-right ml-3"></i>
+                                </span>
+                            @endif
+                        </div>
+                    </nav>
                 </div>
             @endif
         </div>
@@ -204,17 +244,13 @@ function training() {
     return {
         search: '',
         filter: '',
+        isVisible(status, title) {
+            const matchesSearch = this.search === '' || title.includes(this.search.toLowerCase());
+            const matchesFilter = this.filter === '' || status === this.filter;
+            return matchesSearch && matchesFilter;
+        },
         filterModels() {
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const status = row.getAttribute('x-show').match(/'([^']+)'/)[1];
-                const name = row.getAttribute('x-show').match(/'([^']+)'/)[2].toLowerCase();
-                
-                const matchesSearch = this.search === '' || name.includes(this.search.toLowerCase());
-                const matchesFilter = this.filter === '' || status === this.filter;
-                
-                row.style.display = matchesSearch && matchesFilter ? 'table-row' : 'none';
-            });
+            // No need for manual DOM manipulation, Alpine.js will handle it
         }
     }
 }

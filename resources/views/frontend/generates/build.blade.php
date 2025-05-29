@@ -242,7 +242,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
 <script>
 console.log('Script loaded for build.blade.php');
 
@@ -647,4 +647,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 });
 </script>
-@endpush
+@endsection

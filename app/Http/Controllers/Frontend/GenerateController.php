@@ -55,26 +55,39 @@ class GenerateController extends Controller
             abort(404, 'Payload template not found.');
         }
 
+        // First try to find the generate record without parent restriction
         if ($fal->model_type === 'train') {
             $generate = Generate::with(['train', 'user'])
                 ->where('id', $request->generate_id)
-                ->where('parent', null)
                 ->first();
         } else {
             $generate = Generate::with(['user'])
                 ->where('id', $request->generate_id)
-                ->where('parent', null)
                 ->first();
+        }
+
+        if (!$generate) {
+            abort(404, 'Generate record not found.');
+        }
+
+        // If this is a child record, get its parent
+        if ($generate->parent) {
+            $parent = Generate::with(['user'])
+                ->where('id', $generate->parent)
+                ->first();
+            if ($parent) {
+                $generate = $parent;
+            }
         }
 
         if ($fal->model_type === 'train') {
             $childs = Generate::with(['train', 'user'])
-                ->where('parent', $request->generate_id)
+                ->where('parent', $generate->id)
                 ->orderBy('id', 'asc')
                 ->get();
         } else {
             $childs = Generate::with(['user'])
-                ->where('parent', $request->generate_id)
+                ->where('parent', $generate->id)
                 ->orderBy('id', 'asc')
                 ->get();
         }

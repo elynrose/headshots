@@ -27,6 +27,41 @@ class ProcessTrainPhotos implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 3;
+
+    /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 600;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 60;
+
+    /**
+     * The queue connection that should handle the job.
+     *
+     * @var string
+     */
+    public $connection = 'redis';
+
+    /**
+     * The name of the queue the job should be sent to.
+     *
+     * @var string
+     */
+    public $queue = 'training';
+
+    /**
      * The Train model instance.
      *
      * @var Train
@@ -45,80 +80,206 @@ class ProcessTrainPhotos implements ShouldQueue
     }
 
     /**
+     * Handle a job failure.
+     *
+     * @param  \Throwable  $exception
+     * @return void
+     */
+    public function failed(\Throwable $exception)
+    {
+        $this->model->update([
+            'status' => 'ERROR',
+            'error_log' => $exception->getMessage()
+        ]);
+
+        \Log::error('Training job failed: ' . $exception->getMessage());
+    }
+
+    /**
+     * Calculate the number of seconds to wait before retrying the job.
+     *
+     * @return array
+     */
+    public function backoff()
+    {
+        return [60, 180, 300]; // Retry after 1, 3, and 5 minutes
+    }
+
+    /**
      * Execute the job.
      *
      * @return void
      */
     public function handle()
     {
-        // Fetch photos associated with the user and marked for training
-        $photos = \App\Models\Photo::with(['user', 'media'])
-            ->where('user_id', $this->model->user_id)
-            ->where('use_for_training', 1)
-            ->get();
-    
-        if ($photos->isEmpty()) {
-            return;
-        }
-    
-        $zip = new ZipArchive;
-        $zipFileName = 'train_photos_' . uniqid() . '.zip';
-        $tempDirectory = storage_path('app/temp/');
-    
-        // Ensure the temp directory exists
-        if (!file_exists($tempDirectory)) {
-            mkdir($tempDirectory, 0775, true);
-        }
-    
-        $path = $tempDirectory . $zipFileName;
-
-        // Create a new ZIP file
         try {
-            if ($zip->open($path, ZipArchive::CREATE) === TRUE) {
-                // Add each photo file to the ZIP archive
-                foreach ($photos as $media) {
-                    $files = $media->getMedia('photo');
-                    foreach ($files as $file) {
-                        $s3Url = $file->getUrl();
-                        $fileContents = file_get_contents($s3Url);
-                        if ($fileContents !== false) {
-                            $zip->addFromString(basename($s3Url), $fileContents);
-                        } else {
-                            \Log::error("Failed to download file from S3: " . $s3Url);
-                        }
-                    }
-                }
-                $zip->close();
-            } else {
-                throw new Exception("Unable to create ZIP file.");
+            // Fetch photos associated with the user and marked for training
+            $photos = \App\Models\Photo::with(['user', 'media'])
+                ->where('user_id', $this->model->user_id)
+                ->where('use_for_training', 1)
+                ->get();
+        
+            if ($photos->isEmpty()) {
+                $this->model->update(['status' => 'ERROR', 'error_log' => 'No photos found for training']);
+                return;
             }
-    
-            // Upload ZIP file to S3 storage
-            Storage::disk('cloud')->putFileAs('train_photos', new File($path), $zipFileName, ['visibility' => 'public']);
-             
-            // Generate file URL
-            $key = $zipFileName;
-            $url = Storage::disk('cloud')->url('train_photos/' . $key);
-            \Log::info("ZIP file uploaded successfully. URL: " . $url);
-            
-            // Update model with the ZIP file URL and key
-            $this->model->update(['zipped_file_url' => $url, 'temporary_amz_url' => $key, 'file_size' => Storage::disk('cloud')->size('train_photos/' . $key), 'status' => 'NEW']);
-            
-            // Remove the local ZIP file after upload
-            unlink($path);
 
-            // Submit the training job to an external API
-            $this->submitTrainingJob($this->model);
+            // Validate and prepare images
+            $validImages = $this->validateAndPrepareImages($photos);
+            if (empty($validImages)) {
+                $this->model->update(['status' => 'ERROR', 'error_log' => 'No valid images found for training']);
+                return;
+            }
+
+            // Create ZIP file with optimized images
+            $zipFileName = 'train_photos_' . uniqid() . '.zip';
+            $tempDirectory = storage_path('app/temp/');
+        
+            if (!file_exists($tempDirectory)) {
+                mkdir($tempDirectory, 0775, true);
+            }
+        
+            $path = $tempDirectory . $zipFileName;
+
+            // Create ZIP with optimized images
+            if ($this->createOptimizedZip($validImages, $path)) {
+                // Upload to cloud storage
+                Storage::disk('cloud')->putFileAs('train_photos', new File($path), $zipFileName, ['visibility' => 'public']);
+                
+                // Generate file URL
+                $url = Storage::disk('cloud')->url('train_photos/' . $zipFileName);
+                
+                // Update model with ZIP file URL
+                $this->model->update([
+                    'zipped_file_url' => $url,
+                    'temporary_amz_url' => $zipFileName,
+                    'file_size' => Storage::disk('cloud')->size('train_photos/' . $zipFileName),
+                    'status' => 'NEW'
+                ]);
+                
+                // Clean up temporary file
+                unlink($path);
+
+                // Submit training job
+                $this->submitTrainingJob($this->model);
+            } else {
+                $this->model->update(['status' => 'ERROR', 'error_log' => 'Failed to create ZIP file']);
+            }
 
         } catch (Exception $e) {
-            \Log::error('ZIP processing failed: ' . $e->getMessage());
-            return false;
+            \Log::error('Training process failed: ' . $e->getMessage());
+            $this->model->update(['status' => 'ERROR', 'error_log' => $e->getMessage()]);
         }
     }
 
+    /**
+     * Validate and prepare images for training
+     */
+    private function validateAndPrepareImages($photos)
+    {
+        $validImages = [];
+        
+        foreach ($photos as $photo) {
+            $media = $photo->getFirstMedia('photo');
+            if (!$media) continue;
 
+            try {
+                $imageUrl = $media->getUrl();
+                $imageData = file_get_contents($imageUrl);
+                
+                if ($imageData === false) {
+                    \Log::warning("Failed to download image: {$imageUrl}");
+                    continue;
+                }
 
-     /**
+                // Validate image format and size
+                $imageInfo = getimagesizefromstring($imageData);
+                if ($imageInfo === false) {
+                    \Log::warning("Invalid image format: {$imageUrl}");
+                    continue;
+                }
+
+                // Check minimum dimensions
+                if ($imageInfo[0] < 512 || $imageInfo[1] < 512) {
+                    \Log::warning("Image too small: {$imageUrl}");
+                    continue;
+                }
+
+                // Optimize image if needed
+                $optimizedData = $this->optimizeImage($imageData, $imageInfo);
+                
+                $validImages[] = [
+                    'data' => $optimizedData,
+                    'name' => basename($imageUrl)
+                ];
+            } catch (Exception $e) {
+                \Log::error("Error processing image {$photo->id}: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        return $validImages;
+    }
+
+    /**
+     * Optimize image data
+     */
+    private function optimizeImage($imageData, $imageInfo)
+    {
+        // Create image resource
+        $image = imagecreatefromstring($imageData);
+        
+        // Resize if too large (max 1024px on longest side)
+        $maxDimension = 1024;
+        $width = $imageInfo[0];
+        $height = $imageInfo[1];
+        
+        if ($width > $maxDimension || $height > $maxDimension) {
+            if ($width > $height) {
+                $newWidth = $maxDimension;
+                $newHeight = floor($height * ($maxDimension / $width));
+            } else {
+                $newHeight = $maxDimension;
+                $newWidth = floor($width * ($maxDimension / $height));
+            }
+            
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            $image = $resized;
+        }
+
+        // Output optimized image
+        ob_start();
+        imagejpeg($image, null, 85); // 85% quality
+        $optimizedData = ob_get_clean();
+        
+        imagedestroy($image);
+        if (isset($resized)) {
+            imagedestroy($resized);
+        }
+
+        return $optimizedData;
+    }
+
+    /**
+     * Create ZIP file with optimized images
+     */
+    private function createOptimizedZip($images, $path)
+    {
+        $zip = new ZipArchive();
+        
+        if ($zip->open($path, ZipArchive::CREATE) !== TRUE) {
+            return false;
+        }
+
+        foreach ($images as $image) {
+            $zip->addFromString($image['name'], $image['data']);
+        }
+
+        return $zip->close();
+    }
+
+    /**
      * Submit the training job to an external API.
      *
      * @param string $url

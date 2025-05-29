@@ -14,6 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\ProcessTrainPhotos;
+use Illuminate\Support\Facades\Cache;
+use Exception;
 
 
 class TrainController extends Controller
@@ -41,7 +44,8 @@ class TrainController extends Controller
 
         $trains = Train::with(['user'])
         ->where('user_id', Auth::id())
-        ->get();
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
 
         return view('frontend.trains.index', compact('trains'));
     }
@@ -50,32 +54,68 @@ class TrainController extends Controller
     {
         abort_if(Gate::denies('train_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $users = User::pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+        // Get user's images from the photos table
+        $images = \App\Models\Photo::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($photo) {
+                $media = $photo->getFirstMedia('photo');
+                return (object)[
+                    'id' => $photo->id,
+                    'url' => $media ? $media->getUrl() : null,
+                    'name' => $photo->name ?? 'Photo ' . $photo->id
+                ];
+            })
+            ->filter(function ($photo) {
+                return $photo->url !== null;
+            });
 
-        return view('frontend.trains.create', compact('users'));
+        return view('frontend.trains.create', compact('images'));
     }
 
     public function store(StoreTrainRequest $request)
     {
         // Check if the user already has a training in progress
         $existingTrain = Train::where('user_id', $request->user_id)
-            ->whereIn('status', ['NEW', 'IN_QUEUE', 'IN_PROGRESS', 'COMPLETED'])
+            ->whereIn('status', ['NEW', 'IN_QUEUE', 'IN_PROGRESS'])
             ->first();
 
-     /*   if ($existingTrain) {
+        if ($existingTrain) {
             return redirect()->route('frontend.trains.index')
-            ->withErrors(['error' => 'You are only allowed to create one training.']);
-        } */
+                ->withErrors(['error' => 'You already have a training in progress. Please wait for it to complete.']);
+        }
 
-        $train = Train::create(
-            [
+        // Create the training record
+        $train = Train::create([
             'user_id' => $request->user_id,
             'title' => $request->title,
-            'status'=> 'NEW',
-            ]
-        );
+            'status' => 'NEW',
+        ]);
 
-        return redirect()->route('frontend.trains.index');
+        // Get the selected images
+        if ($request->has('images')) {
+            $selectedImages = \App\Models\Photo::whereIn('id', $request->images)
+                ->where('user_id', Auth::id())
+                ->get()
+                ->map(function ($photo) {
+                    $media = $photo->getFirstMedia('photo');
+                    return $media ? $media->getUrl() : null;
+                })
+                ->filter()
+                ->values()
+                ->toArray();
+
+            // Store the image URLs in the training record
+            $train->update([
+                'images' => json_encode($selectedImages)
+            ]);
+
+            // Dispatch the training job
+            dispatch(new ProcessTrainPhotos($train));
+        }
+
+        return redirect()->route('frontend.trains.index')
+            ->with('success', 'Training model created successfully. Your images are being processed.');
     }
 
     public function edit(Train $train)
@@ -145,60 +185,110 @@ class TrainController extends Controller
       
     }
 
-    public function getJobStatus($train){
+    public function getJobStatus($train)
+    {
         try {
+            // Check cache first
+            $cacheKey = "train_status_{$train->id}";
+            $cachedStatus = Cache::get($cacheKey);
+            
+            if ($cachedStatus) {
+                return $cachedStatus;
+            }
+
             // Make a GET request to check job status
             $response = $this->client->get($train->status_url, [
                 'headers' => [
                     'Authorization' => 'Key ' . $this->apiKey,
                 ],
+                'timeout' => 5, // 5 second timeout
             ]);
-            // Return decoded response
-           $result =  json_decode($response->getBody()->getContents(), true);
-           
-           $train->status = $result['status'];
-           $train->save();
-        
-           return $result;
+
+            $result = json_decode($response->getBody()->getContents(), true);
+            
+            if (!$result) {
+                throw new Exception('Invalid response from status API');
+            }
+
+            // Update train status
+            $train->status = $result['status'];
+            $train->save();
+
+            // Cache the status for 30 seconds
+            Cache::put($cacheKey, $result, 30);
+
+            return $result;
 
         } catch (Exception $e) {
             \Log::error("Failed to get job status: " . $e->getMessage());
-            $train->status = "ERROR";
-            $train->save();
+            
+            // Only update status to ERROR if it's a critical error
+            if ($e->getCode() === 401 || $e->getCode() === 404) {
+                $train->status = "ERROR";
+                $train->error_log = $e->getMessage();
+                $train->save();
+            }
+            
             return null;
         }
     }
 
-    public function getResults($train){
-
-        try{
-            // Make a GET request to retrieve job results
-        $final_response = $this->client->get($train->response_url, [
-            'headers' => [
-                'Authorization' => 'Key ' . $this->apiKey,
-            ],
-        ]);
-
-
-        $final_result = json_decode($final_response->getBody()->getContents(), true);
-
-        $train->config_file = $final_result['config_file']['url'];
-        $train->diffusers_lora_file = $final_result['diffusers_lora_file']['url'];
-        $train->status = "COMPLETED";
-        $train->save();
-        
-        } catch (Exception $e) {
-            //if error 401
-            if($e->getCode() == 401){
-                $train->status = "ERROR";
-                $train->save();
-                \Log::error("Failed to get job status: " . $e->getMessage());
+    public function getResults($train)
+    {
+        try {
+            // Check cache first
+            $cacheKey = "train_results_{$train->id}";
+            $cachedResults = Cache::get($cacheKey);
+            
+            if ($cachedResults) {
+                return $cachedResults;
             }
-            \Log::error("Failed to get job status: " . $e->getMessage());
-        }
 
-        }
+            // Make a GET request to retrieve job results
+            $response = $this->client->get($train->response_url, [
+                'headers' => [
+                    'Authorization' => 'Key ' . $this->apiKey,
+                ],
+                'timeout' => 10, // 10 second timeout
+            ]);
 
+            $result = json_decode($response->getBody()->getContents(), true);
+            
+            if (!$result) {
+                throw new Exception('Invalid response from results API');
+            }
+
+            // Validate required fields
+            if (!isset($result['config_file']['url']) || !isset($result['diffusers_lora_file']['url'])) {
+                throw new Exception('Missing required fields in response');
+            }
+
+            // Update train model
+            $train->config_file = $result['config_file']['url'];
+            $train->diffusers_lora_file = $result['diffusers_lora_file']['url'];
+            $train->status = "COMPLETED";
+            $train->save();
+
+            // Cache the results for 5 minutes
+            Cache::put($cacheKey, $result, 300);
+
+            return $result;
+
+        } catch (Exception $e) {
+            \Log::error("Failed to get results: " . $e->getMessage());
+            
+            if ($e->getCode() === 401) {
+                $train->status = "ERROR";
+                $train->error_log = "Authentication failed: " . $e->getMessage();
+            } else {
+                $train->status = "ERROR";
+                $train->error_log = "Failed to get results: " . $e->getMessage();
+            }
+            
+            $train->save();
+            return null;
+        }
+    }
 
     /**
      * Submit the training job to an external API.

@@ -34,6 +34,7 @@ class Train extends Model
         'file_size',
         'error_log',
         'user_id',
+        'images',
         'created_at',
         'updated_at',
         'deleted_at',

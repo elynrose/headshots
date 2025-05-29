@@ -24,8 +24,9 @@ class PhotosController extends Controller
         abort_if(Gate::denies('photo_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $photos = Photo::with(['user', 'media'])
-        ->where('user_id', Auth::id())
-        ->get();
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('frontend.photos.index', compact('photos'));
     }
