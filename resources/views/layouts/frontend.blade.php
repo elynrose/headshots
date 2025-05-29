@@ -50,10 +50,18 @@
                                    class="{{ request()->routeIs('frontend.trains.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                     Training
                                 </a>
+                                <a href="{{ route('frontend.campaigns.index') }}"
+                                   class="{{ request()->routeIs('frontend.campaigns.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                    Campaigns
+                                </a>
+                                <a href="{{ route('frontend.scenes.index') }}"
+                                   class="{{ request()->routeIs('frontend.scenes.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                    Scenes
+                                </a>
                                 <a href="{{ route('frontend.generates.create', ['model_id'=>1])}}"
                                    class="{{ request()->routeIs('frontend.generates.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                     Generate
-                                        </a>
+                                </a>
                             @endauth
                         </div>
                     </div>

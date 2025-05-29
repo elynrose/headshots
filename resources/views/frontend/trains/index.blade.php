@@ -41,7 +41,7 @@
                     <h2 class="text-2xl font-bold text-gray-900">Model Training</h2>
                     <p class="mt-1 text-sm text-gray-500">Train and manage your custom AI models.</p>
                 </div>
-                @can('train_create')
+            @can('train_create')
                     <a href="{{ route('frontend.trains.create') }}" 
                        class="btn-primary">
                         <i class="fas fa-plus mr-2"></i> Start New Training
@@ -164,7 +164,7 @@
                                                 {{--$train->status --}}
                                                 @if(in_array($train->status, ['NEW', 'IN_QUEUE', 'IN_PROGRESS']))
                                                     <span class="polling-indicator ml-2">● Training in progress</span>
-                                                @endif
+                                            @endif
                                             </div>
                                         </div>
                                     </div>
@@ -184,9 +184,9 @@
                                         <span class="text-sm text-gray-500 mt-1">{{ $train->progress ?? 0 }}%</span>
                                     @elseif($train->status === 'IN_QUEUE' && $train->queue_position)
                                         <span class="text-sm text-gray-500">Queue position: {{ $train->queue_position }}</span>
-                                    @else
+                                            @else
                                         <span class="text-sm text-gray-500">-</span>
-                                    @endif
+                                            @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $train->created_at->diffForHumans() }}
@@ -205,7 +205,7 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         @endcan
-                                        @can('train_delete')
+                                            @can('train_delete')
                                             <form action="{{ route('frontend.trains.destroy', $train->id) }}" 
                                                   method="POST" 
                                                   onsubmit="return confirm('{{ trans('global.areYouSure') }}');" 
@@ -216,16 +216,16 @@
                                                         class="text-red-600 hover:text-red-900">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-                                            </form>
-                                        @endcan
-                                    </div>
+                                            </form>    
+                                            @endcan
+                                            </div>
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-            </div>
-
+                                        </div>
+                             
             @if($trains->hasPages())
                 <div class="mt-4">
                     <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
@@ -241,7 +241,7 @@
                                     Previous
                                 </a>
                             @endif
-                        </div>
+                            </div>
                         <div class="hidden md:-mt-px md:flex">
                             @foreach($trains->getUrlRange(1, $trains->lastPage()) as $page => $url)
                                 @if($page == $trains->currentPage())
@@ -253,8 +253,8 @@
                                         {{ $page }}
                                     </a>
                                 @endif
-                            @endforeach
-                        </div>
+                        @endforeach
+                    </div>
                         <div class="-mt-px flex w-0 flex-1 justify-end">
                             @if($trains->hasMorePages())
                                 <a href="{{ $trains->nextPageUrl() }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
@@ -571,6 +571,6 @@ document.addEventListener('DOMContentLoaded', function() {
             throw error;
         }
     }
-});
+    });
 </script>
 @endpush

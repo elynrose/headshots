@@ -130,6 +130,9 @@ Route::group(['as' => 'frontend.', 'namespace' => 'Frontend', 'middleware' => ['
     Route::post('frontend/profile/destroy', 'ProfileController@destroy')->name('profile.destroy');
     Route::post('frontend/profile/password', 'ProfileController@password')->name('profile.password');
     Route::post('profile/toggle-two-factor', 'ProfileController@toggleTwoFactor')->name('profile.toggle-two-factor');
+
+    Route::resource('campaigns', 'App\Http\Controllers\Frontend\CampaignController');
+    Route::resource('scenes', 'App\Http\Controllers\Frontend\SceneController');
 });
 Route::group(['namespace' => 'Auth', 'middleware' => ['auth', '2fa']], function () {
     // Two Factor Authentication
