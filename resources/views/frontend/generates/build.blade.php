@@ -55,13 +55,13 @@
                              class="w-full h-full object-contain image_{{$generate->id}}" 
                              alt="{{$generate->title}}" 
                              loading="lazy">
-                    </a>
-                @else
+                                        </a>
+                                    @else
                     <div class="flex items-center justify-center h-full text-red-500">
-                        {{ _('Model Undefined') }}
+                                        {{ _('Model Undefined') }}
                     </div>
-                @endif
-            </div>
+                                    @endif
+                                </div>
 
             <!-- Action Buttons -->
             <div class="mt-6 flex flex-wrap gap-3">

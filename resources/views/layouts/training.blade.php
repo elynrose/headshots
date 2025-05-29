@@ -18,7 +18,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @yield('styles')
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased bg-gray-50">
@@ -32,7 +32,7 @@
                         <div class="flex-shrink-0 flex items-center">
                             <a href="{{ route('frontend.home') }}" class="text-xl font-bold text-gray-800">
                                 {{ config('app.name', 'Laravel') }}
-                                </a>
+                            </a>
                         </div>
 
                         <!-- Navigation Links -->
@@ -53,7 +53,7 @@
                                 <a href="{{ route('frontend.generates.create', ['model_id'=>1])}}"
                                    class="{{ request()->routeIs('frontend.generates.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                     Generate
-                                        </a>
+                                </a>
                             @endauth
                         </div>
                     </div>
@@ -87,18 +87,18 @@
                 @if(session('status'))
                     <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                         <span class="block sm:inline">{{ session('status') }}</span>
-                </div>
-            @endif
+                    </div>
+                @endif
 
                 @yield('content')
-                </div>
+            </div>
         </main>
     </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    @yield('scripts')
+    @stack('scripts')
 </body>
 
-</html>
+</html> 

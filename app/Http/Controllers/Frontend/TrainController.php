@@ -169,20 +169,49 @@ class TrainController extends Controller
 
     public function status(Request $request)
     {
+        \Log::info('Status check requested', [
+            'train_id' => $request->id,
+            'timestamp' => now()->toDateTimeString(),
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent()
+        ]);
+        
         $train = Train::find($request->id);
-
-        if( $train->status == 'IN_QUEUE') {
-            $this->getJobStatus($train);
-        } elseif( $train->status == 'IN_PROGRESS') {
-            $this->getResults($train);
-            return json_encode($train);
-        } elseif( $train->status == 'COMPLETED') {
-           return json_encode($train);
-        } elseif( $train->status == 'NEW') {
-            return;
+        if (!$train) {
+            \Log::error('Train not found', ['train_id' => $request->id]);
+            return response()->json(['error' => 'Train not found'], 404);
         }
 
-      
+        \Log::info('Current train status', [
+            'train_id' => $train->id,
+            'status' => $train->status,
+            'queue_position' => $train->queue_position,
+            'created_at' => $train->created_at
+        ]);
+
+        if ($train->status == 'IN_QUEUE') {
+            \Log::info('Train is IN_QUEUE, checking job status', ['train_id' => $train->id]);
+            $result = $this->getJobStatus($train);
+            \Log::info('Job status result', [
+                'train_id' => $train->id,
+                'result' => $result,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            return response()->json($result);
+        } elseif ($train->status == 'IN_PROGRESS') {
+            \Log::info('Train is IN_PROGRESS, getting results', ['train_id' => $train->id]);
+            $this->getResults($train);
+            return response()->json($train);
+        } elseif ($train->status == 'COMPLETED') {
+            \Log::info('Train is COMPLETED', [
+                'train_id' => $train->id,
+                'completed_at' => $train->updated_at
+            ]);
+            return response()->json($train);
+        } elseif ($train->status == 'NEW') {
+            \Log::info('Train is NEW', ['train_id' => $train->id]);
+            return response()->json($train);
+        }
     }
 
     public function getJobStatus($train)
@@ -193,9 +222,21 @@ class TrainController extends Controller
             $cachedStatus = Cache::get($cacheKey);
             
             if ($cachedStatus) {
+                \Log::info('Returning cached status', [
+                    'train_id' => $train->id,
+                    'cached_status' => $cachedStatus,
+                    'cache_key' => $cacheKey,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
                 return $cachedStatus;
             }
 
+            \Log::info('Making API request to status URL', [
+                'train_id' => $train->id,
+                'status_url' => $train->status_url,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             // Make a GET request to check job status
             $response = $this->client->get($train->status_url, [
                 'headers' => [
@@ -205,14 +246,31 @@ class TrainController extends Controller
             ]);
 
             $result = json_decode($response->getBody()->getContents(), true);
+            \Log::info('API response received', [
+                'train_id' => $train->id,
+                'response' => $result,
+                'timestamp' => now()->toDateTimeString()
+            ]);
             
             if (!$result) {
                 throw new Exception('Invalid response from status API');
             }
 
-            // Update train status
+            // Update train status and queue position
+            $oldStatus = $train->status;
             $train->status = $result['status'];
+            if (isset($result['queue_position'])) {
+                $train->queue_position = $result['queue_position'];
+            }
             $train->save();
+            
+            \Log::info('Updated train status', [
+                'train_id' => $train->id,
+                'old_status' => $oldStatus,
+                'new_status' => $train->status,
+                'queue_position' => $train->queue_position,
+                'timestamp' => now()->toDateTimeString()
+            ]);
 
             // Cache the status for 30 seconds
             Cache::put($cacheKey, $result, 30);
@@ -220,16 +278,32 @@ class TrainController extends Controller
             return $result;
 
         } catch (Exception $e) {
-            \Log::error("Failed to get job status: " . $e->getMessage());
+            \Log::error("Failed to get job status", [
+                'train_id' => $train->id,
+                'status_url' => $train->status_url,
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
             
             // Only update status to ERROR if it's a critical error
             if ($e->getCode() === 401 || $e->getCode() === 404) {
                 $train->status = "ERROR";
                 $train->error_log = $e->getMessage();
                 $train->save();
+                
+                \Log::error('Updated train status to ERROR', [
+                    'train_id' => $train->id,
+                    'error_message' => $e->getMessage(),
+                    'timestamp' => now()->toDateTimeString()
+                ]);
             }
             
-            return null;
+            return [
+                'status' => $train->status,
+                'queue_position' => $train->queue_position,
+                'error' => $e->getMessage()
+            ];
         }
     }
 
@@ -241,8 +315,19 @@ class TrainController extends Controller
             $cachedResults = Cache::get($cacheKey);
             
             if ($cachedResults) {
+                \Log::info('Returning cached results', [
+                    'train_id' => $train->id,
+                    'cache_key' => $cacheKey,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
                 return $cachedResults;
             }
+
+            \Log::info('Making API request to results URL', [
+                'train_id' => $train->id,
+                'response_url' => $train->response_url,
+                'timestamp' => now()->toDateTimeString()
+            ]);
 
             // Make a GET request to retrieve job results
             $response = $this->client->get($train->response_url, [
@@ -254,20 +339,41 @@ class TrainController extends Controller
 
             $result = json_decode($response->getBody()->getContents(), true);
             
+            \Log::info('API response received', [
+                'train_id' => $train->id,
+                'response' => $result,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             if (!$result) {
                 throw new Exception('Invalid response from results API');
             }
 
             // Validate required fields
             if (!isset($result['config_file']['url']) || !isset($result['diffusers_lora_file']['url'])) {
+                \Log::error('Missing required fields in response', [
+                    'train_id' => $train->id,
+                    'response' => $result,
+                    'timestamp' => now()->toDateTimeString()
+                ]);
                 throw new Exception('Missing required fields in response');
             }
 
             // Update train model
+            $oldStatus = $train->status;
             $train->config_file = $result['config_file']['url'];
             $train->diffusers_lora_file = $result['diffusers_lora_file']['url'];
             $train->status = "COMPLETED";
             $train->save();
+
+            \Log::info('Updated train status to COMPLETED', [
+                'train_id' => $train->id,
+                'old_status' => $oldStatus,
+                'new_status' => $train->status,
+                'config_file' => $train->config_file,
+                'diffusers_lora_file' => $train->diffusers_lora_file,
+                'timestamp' => now()->toDateTimeString()
+            ]);
 
             // Cache the results for 5 minutes
             Cache::put($cacheKey, $result, 300);
@@ -275,7 +381,13 @@ class TrainController extends Controller
             return $result;
 
         } catch (Exception $e) {
-            \Log::error("Failed to get results: " . $e->getMessage());
+            \Log::error("Failed to get results", [
+                'train_id' => $train->id,
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
             
             if ($e->getCode() === 401) {
                 $train->status = "ERROR";
@@ -286,6 +398,13 @@ class TrainController extends Controller
             }
             
             $train->save();
+            
+            \Log::error('Updated train status to ERROR', [
+                'train_id' => $train->id,
+                'error_log' => $train->error_log,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             return null;
         }
     }

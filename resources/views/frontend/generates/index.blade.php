@@ -4,22 +4,22 @@
     <!-- Header Section -->
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
+                <div>
                 <h1 class="text-2xl font-bold text-gray-900">My Generations</h1>
                 <p class="mt-1 text-sm text-gray-500">View and manage your generated content</p>
-            </div>
+                                            </div>
             <div class="flex items-center gap-4">
                 <!-- Stats -->
                 <div class="flex items-center gap-4">
                     <div class="text-center">
                         <span class="block text-sm font-medium text-gray-500">Total</span>
                         <span class="block text-xl font-semibold text-gray-900">{{ $generates->total() }}</span>
-                    </div>
+                                            </div>
                     <div class="text-center">
                         <span class="block text-sm font-medium text-gray-500">In Progress</span>
                         <span class="block text-xl font-semibold text-indigo-600">{{ $generates->whereIn('status', ['NEW', 'IN_QUEUE', 'IN_PROGRESS'])->count() }}</span>
-                    </div>
-                </div>
+                                         </div>
+                                        </div>
                 <!-- New Generation Button -->
                 @can('generate_create')
                 <div class="relative" x-data="{ open: false }">
@@ -109,7 +109,7 @@
                     </div>
                 @endif
             </div>
-
+         
             <!-- Card Body -->
             <div class="p-4">
                 <!-- Status and Actions -->
@@ -174,8 +174,8 @@
             </div>
         </div>
         @endforeach
-    </div>
-
+        </div>
+     
     <!-- Pagination -->
     <div class="mt-8">
         <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
