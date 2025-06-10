@@ -541,37 +541,44 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleCompletedStatus(element, generateId, data) {
-        console.log('Generation completed for ID', generateId, 'Data:', data);
+        console.log('Handling completed status for ID:', generateId, 'Data:', data);
         element.classList.remove('waiting');
-        document.querySelectorAll('.loader_' + generateId).forEach(el => el.classList.add('hide'));
+        document.querySelectorAll('.loading-gif, .loader_' + generateId).forEach(el => el.style.display = 'none');
 
-        // Get the content type from the data or element
-        const contentType = data.type || element.dataset.type;
-        console.log('Content type for ID', generateId, ':', contentType);
+        // Handle video content
+        if (data.content_type === 'video' || data.content_type === 'audio' || data.content_type === 'upscale') {
+            const videoElement = document.querySelector('.video_' + generateId);
+            if (videoElement && data.video_url) {
+                const timestamp = new Date().getTime();
+                const videoUrl = data.video_url + "?t=" + timestamp;
+                console.log('Loading video URL:', videoUrl);
+                
+                // Hide any image elements
+                const imageElement = document.querySelector('.image_' + generateId);
+                if (imageElement) {
+                    imageElement.style.display = 'none';
+                }
 
-        // Log element existence and URLs
-        console.log('Elements and URLs:', {
-            contentType: contentType,
-            imageUrl: data.image_url,
-            videoUrl: data.video_url,
-            element: element
-        });
+                // Show and load video
+                videoElement.style.display = 'block';
+                videoElement.src = videoUrl;
+                
+                // Add event listeners for video loading
+                videoElement.onloadeddata = () => {
+                    console.log('Video loaded successfully for ID:', generateId);
+                    videoElement.style.display = 'block';
+                };
 
-        // Check if we have a video URL
-        if (data.video_url) {
-            console.log('Found video URL, handling video content');
-            handleVideoContent(element, generateId, data);
+                videoElement.onerror = (e) => {
+                    console.error('Error loading video:', e);
+                    showToast('error', 'Failed to load video. Please try refreshing the page.');
+                };
+            }
         }
-        // Check if we have an image URL
-        else if (data.image_url) {
-            console.log('Found image URL, handling image content');
+        // Handle image content
+        else if (data.content_type === 'image' || data.content_type === 'prompt' || data.content_type === 'train' || data.content_type === 'background') {
             handleImageContent(element, generateId, data);
         }
-        else {
-            console.error('No media URL found for ID', generateId);
-            showToast('error', 'No media URL found');
-        }
-        showToast('success', 'Generation completed successfully!');
     }
 
     function handleErrorStatus(element, generateId, data) {

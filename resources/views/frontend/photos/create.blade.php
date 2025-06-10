@@ -76,7 +76,7 @@
                         </div>
                        
                         <div class="form-group mt-6">
-                            <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
+                                <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
                             <button type="submit" 
                                     class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                     :disabled="!hasFiles">
@@ -95,20 +95,20 @@
 @section('scripts')
 <script>
     var uploadedPhotoMap = {}
-    Dropzone.options.photoDropzone = {
-        url: '{{ route('frontend.photos.storeMedia') }}',
-        maxFilesize: 2, // MB
-        acceptedFiles: '.jpeg,.jpg,.png,.gif',
-        addRemoveLinks: true,
+Dropzone.options.photoDropzone = {
+    url: '{{ route('frontend.photos.storeMedia') }}',
+    maxFilesize: 2, // MB
+    acceptedFiles: '.jpeg,.jpg,.png,.gif',
+    addRemoveLinks: true,
         maxFiles: 10,
-        headers: {
-            'X-CSRF-TOKEN': "{{ csrf_token() }}"
-        },
-        params: {
-            size: 2,
-            width: 4096,
-            height: 4096
-        },
+    headers: {
+      'X-CSRF-TOKEN': "{{ csrf_token() }}"
+    },
+    params: {
+      size: 2,
+      width: 4096,
+      height: 4096
+    },
         init: function() {
             this.on("addedfile", function(file) {
                 // Update the current files count
@@ -119,35 +119,35 @@
                 this.options.currentFiles = this.files.length;
             });
             this.on("success", function(file, response) {
-                $('form').append('<input type="hidden" name="photo[]" value="' + response.name + '">')
-                uploadedPhotoMap[file.name] = response.name
+      $('form').append('<input type="hidden" name="photo[]" value="' + response.name + '">')
+      uploadedPhotoMap[file.name] = response.name
             });
             this.on("removedfile", function(file) {
-                file.previewElement.remove()
-                var name = ''
-                if (typeof file.file_name !== 'undefined') {
-                    name = file.file_name
-                } else {
-                    name = uploadedPhotoMap[file.name]
-                }
-                $('form').find('input[name="photo[]"][value="' + name + '"]').remove()
+      file.previewElement.remove()
+      var name = ''
+      if (typeof file.file_name !== 'undefined') {
+        name = file.file_name
+      } else {
+        name = uploadedPhotoMap[file.name]
+      }
+      $('form').find('input[name="photo[]"][value="' + name + '"]').remove()
             });
             this.on("error", function(file, response) {
-                if ($.type(response) === 'string') {
-                    var message = response //dropzone sends it's own error messages in string
-                } else {
-                    var message = response.errors.file
-                }
-                file.previewElement.classList.add('dz-error')
-                _ref = file.previewElement.querySelectorAll('[data-dz-errormessage]')
-                _results = []
-                for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-                    node = _ref[_i]
-                    _results.push(node.textContent = message)
-                }
-                return _results
+         if ($.type(response) === 'string') {
+             var message = response //dropzone sends it's own error messages in string
+         } else {
+             var message = response.errors.file
+         }
+         file.previewElement.classList.add('dz-error')
+         _ref = file.previewElement.querySelectorAll('[data-dz-errormessage]')
+         _results = []
+         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+             node = _ref[_i]
+             _results.push(node.textContent = message)
+         }
+         return _results
             });
-        }
-    }
+     }
+}
 </script>
 @endsection

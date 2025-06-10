@@ -113,13 +113,13 @@ class ProcessTrainPhotos implements ShouldQueue
     public function handle()
     {
         try {
-            // Fetch photos associated with the user and marked for training
-            $photos = \App\Models\Photo::with(['user', 'media'])
-                ->where('user_id', $this->model->user_id)
-                ->where('use_for_training', 1)
-                ->get();
-        
-            if ($photos->isEmpty()) {
+        // Fetch photos associated with the user and marked for training
+        $photos = \App\Models\Photo::with(['user', 'media'])
+            ->where('user_id', $this->model->user_id)
+            ->where('use_for_training', 1)
+            ->get();
+    
+        if ($photos->isEmpty()) {
                 $this->model->update(['status' => 'ERROR', 'error_log' => 'No photos found for training']);
                 return;
             }
@@ -128,18 +128,18 @@ class ProcessTrainPhotos implements ShouldQueue
             $validImages = $this->validateAndPrepareImages($photos);
             if (empty($validImages)) {
                 $this->model->update(['status' => 'ERROR', 'error_log' => 'No valid images found for training']);
-                return;
-            }
-
+            return;
+        }
+    
             // Create ZIP file with optimized images
-            $zipFileName = 'train_photos_' . uniqid() . '.zip';
-            $tempDirectory = storage_path('app/temp/');
-        
-            if (!file_exists($tempDirectory)) {
-                mkdir($tempDirectory, 0775, true);
-            }
-        
-            $path = $tempDirectory . $zipFileName;
+        $zipFileName = 'train_photos_' . uniqid() . '.zip';
+        $tempDirectory = storage_path('app/temp/');
+    
+        if (!file_exists($tempDirectory)) {
+            mkdir($tempDirectory, 0775, true);
+        }
+    
+        $path = $tempDirectory . $zipFileName;
 
             // Create ZIP with optimized images
             if ($this->createOptimizedZip($validImages, $path)) {
@@ -162,7 +162,7 @@ class ProcessTrainPhotos implements ShouldQueue
 
                 // Submit training job
                 $this->submitTrainingJob($this->model);
-            } else {
+                        } else {
                 $this->model->update(['status' => 'ERROR', 'error_log' => 'Failed to create ZIP file']);
             }
 
@@ -242,7 +242,7 @@ class ProcessTrainPhotos implements ShouldQueue
                 $newHeight = $maxDimension;
                 $newWidth = floor($width * ($maxDimension / $height));
             }
-            
+    
             $resized = imagecreatetruecolor($newWidth, $newHeight);
             imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
             $image = $resized;
@@ -274,12 +274,12 @@ class ProcessTrainPhotos implements ShouldQueue
 
         foreach ($images as $image) {
             $zip->addFromString($image['name'], $image['data']);
-        }
+    }
 
         return $zip->close();
     }
 
-    /**
+     /**
      * Submit the training job to an external API.
      *
      * @param string $url

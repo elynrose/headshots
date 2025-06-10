@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     (data.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
                      data.status === 'ERROR' ? 'bg-red-100 text-red-800' : 
                      'bg-yellow-100 text-yellow-800');
-            }
+    }
 
             // Update queue position if available
             if (data.queue_position !== undefined) {

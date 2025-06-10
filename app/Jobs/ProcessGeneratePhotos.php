@@ -48,22 +48,30 @@ class ProcessGeneratePhotos implements ShouldQueue
         try {
             // Send the API request and get the response
             $responseBody = $this->sendRequest($this->model);
+            Log::info('Response received in handle: ' . json_encode($responseBody));
 
             // If a valid response is returned, update the Generate model accordingly
             if ($responseBody) {
-            // Update the Generate model with the response data
-            $this->model->update([
-                'status'         => $responseBody['status'] ?? $this->model->status,
-                'requestid'      => $responseBody['request_id'] ?? null,
-                'response_url'   => $responseBody['response_url'] ?? null,
-                'status_url'     => $responseBody['status_url'] ?? null,
-                'cancel_url'     => $responseBody['cancel_url'] ?? null,
-                'queue_position' => $responseBody['queue_position'] ?? null,
-            ]);
+                // Update the Generate model with the response data
+                $updateData = [
+                    'status'         => $responseBody['status'] ?? $this->model->status,
+                    'requestid'      => $responseBody['request_id'] ?? null,
+                    'response_url'   => $responseBody['response_url'] ?? null,
+                    'status_url'     => $responseBody['status_url'] ?? null,
+                    'cancel_url'     => $responseBody['cancel_url'] ?? null,
+                    'queue_position' => $responseBody['queue_position'] ?? null,
+                ];
+                Log::info('Updating Generate model with data: ' . json_encode($updateData));
+                
+                $this->model->update($updateData);
+                Log::info('Generate model updated successfully');
+            } else {
+                Log::warning('No response body received from API for Generate Model ID ' . $this->model->id);
             }
         } catch (\Exception $e) {
             // Log the error
             Log::error('Error processing Generate Model ID ' . $this->model->id . ': ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
         }
     }
 
@@ -116,6 +124,9 @@ class ProcessGeneratePhotos implements ShouldQueue
         \Log::info('Key ' . env('FAL_AI_API_KEY'));
         try {
             // Send a POST request to the external API using the base URL from the Fal model
+            Log::info('Sending API request to: ' . $urlWithWebhook);
+            Log::info('Request payload: ' . json_encode($payload));
+            
             $response = $client->post($urlWithWebhook, [
                 'headers' => [
                     'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
@@ -126,11 +137,14 @@ class ProcessGeneratePhotos implements ShouldQueue
 
             // Decode the JSON response into an array
             $responseBody = json_decode($response->getBody(), true);
+            Log::info('API Response: ' . json_encode($responseBody));
 
             return $responseBody;
         } catch (\Exception $e) {
             // Log the error and return null on failure
             Log::error('Error sending request for Generate Model ID ' . $generate->id . ': ' . $e->getMessage());
+            Log::error('Request URL: ' . $urlWithWebhook);
+            Log::error('Request payload: ' . json_encode($payload));
             return null;
         }
     }

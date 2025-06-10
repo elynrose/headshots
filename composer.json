@@ -17,6 +17,7 @@
         "nesbot/carbon": "^2.0",
         "nuovo/spreadsheet-reader": "^0.5.11",
         "spatie/laravel-medialibrary": "^10.7",
+        "stripe/stripe-php": "^17.3",
         "yajra/laravel-datatables-oracle": "^10.3"
     },
     "require-dev": {

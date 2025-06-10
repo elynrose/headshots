@@ -326,7 +326,7 @@ class GenerateController extends Controller
     {
         try {
             $generate = Generate::findOrFail($request->id);
-            
+
             if ($generate->status_url) {
                 $response = Http::withHeaders([
                     'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
@@ -349,7 +349,7 @@ class GenerateController extends Controller
                             'Authorization' => 'Key ' . env('FAL_AI_API_KEY'),
                             'Content-Type' => 'application/json',
                         ])->get($data['response_url']);
-                        
+
                         if ($resultResponse->successful()) {
                             $resultData = $resultResponse->json();
                             \Log::info('Fal.ai result response:', $resultData);
@@ -388,7 +388,7 @@ class GenerateController extends Controller
                         }
                     }
                     
-                    $generate->save();
+                $generate->save();
                     \Log::info('Updated generate record:', [
                         'id' => $generate->id,
                         'status' => $generate->status,
@@ -492,8 +492,8 @@ class GenerateController extends Controller
                 
                 \Log::info('Webhook processed successfully');
                 return response()->json(['status' => 'success']);
-            }
-            
+        }
+
             \Log::warning('Generate record not found for requestid:', ['requestid' => $data['requestid']]);
             return response()->json(['status' => 'error', 'message' => 'Generate record not found'], 404);
         }

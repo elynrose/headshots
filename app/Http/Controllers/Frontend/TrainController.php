@@ -258,11 +258,11 @@ class TrainController extends Controller
 
             // Update train status and queue position
             $oldStatus = $train->status;
-            $train->status = $result['status'];
+           $train->status = $result['status'];
             if (isset($result['queue_position'])) {
                 $train->queue_position = $result['queue_position'];
             }
-            $train->save();
+           $train->save();
             
             \Log::info('Updated train status', [
                 'train_id' => $train->id,
@@ -274,8 +274,8 @@ class TrainController extends Controller
 
             // Cache the status for 30 seconds
             Cache::put($cacheKey, $result, 30);
-
-            return $result;
+        
+           return $result;
 
         } catch (Exception $e) {
             \Log::error("Failed to get job status", [
@@ -288,9 +288,9 @@ class TrainController extends Controller
             
             // Only update status to ERROR if it's a critical error
             if ($e->getCode() === 401 || $e->getCode() === 404) {
-                $train->status = "ERROR";
+            $train->status = "ERROR";
                 $train->error_log = $e->getMessage();
-                $train->save();
+            $train->save();
                 
                 \Log::error('Updated train status to ERROR', [
                     'train_id' => $train->id,
@@ -331,14 +331,14 @@ class TrainController extends Controller
 
             // Make a GET request to retrieve job results
             $response = $this->client->get($train->response_url, [
-                'headers' => [
-                    'Authorization' => 'Key ' . $this->apiKey,
-                ],
+            'headers' => [
+                'Authorization' => 'Key ' . $this->apiKey,
+            ],
                 'timeout' => 10, // 10 second timeout
-            ]);
+        ]);
 
             $result = json_decode($response->getBody()->getContents(), true);
-            
+
             \Log::info('API response received', [
                 'train_id' => $train->id,
                 'response' => $result,
@@ -363,9 +363,9 @@ class TrainController extends Controller
             $oldStatus = $train->status;
             $train->config_file = $result['config_file']['url'];
             $train->diffusers_lora_file = $result['diffusers_lora_file']['url'];
-            $train->status = "COMPLETED";
-            $train->save();
-
+        $train->status = "COMPLETED";
+        $train->save();
+        
             \Log::info('Updated train status to COMPLETED', [
                 'train_id' => $train->id,
                 'old_status' => $oldStatus,

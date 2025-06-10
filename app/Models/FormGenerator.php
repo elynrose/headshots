@@ -15,12 +15,12 @@ class FormGenerator extends Model
         // Fetch payload template from database
         $fal = Fal::where('model_type', $type)->first();
 
-        if (!$fal ) {
-            throw new \InvalidArgumentException("Unsupported model type: " . $fal->model_type);
+        if (!$fal) {
+            throw new \InvalidArgumentException("Unsupported model type: " . $type);
         }
 
         // Decode JSON payload template
-        $payloadTemplate = json_decode($fal ->payload, true);
+        $payloadTemplate = json_decode($fal->payload, true);
 
         // Replace placeholders dynamically
         $payload = $this->replacePlaceholders($payloadTemplate, $generate, $trains);

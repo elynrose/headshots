@@ -6,13 +6,13 @@
         <p class="mt-2 text-sm text-gray-500">
             Select images from your gallery to train your custom AI model.
         </p>
-    </div>
+                </div>
 
     <div class="mt-8 max-w-3xl mx-auto">
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
             <div class="p-6">
                 <form method="POST" action="{{ route('frontend.trains.store') }}" x-data="{ selectedImages: [] }">
-                    @csrf
+                        @csrf
                     <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
 
                     <!-- Title -->
@@ -27,7 +27,7 @@
                                required
                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                placeholder="Enter a name for your model">
-                        @if($errors->has('title'))
+                            @if($errors->has('title'))
                             <p class="mt-1 text-sm text-red-600">{{ $errors->first('title') }}</p>
                         @endif
                     </div>
@@ -79,18 +79,18 @@
                         <p class="text-sm text-gray-600">
                             <span x-text="selectedImages.length"></span> images selected
                         </p>
-                    </div>
-
+                        </div>
+                       
                     <!-- Submit Button -->
                     <div class="flex justify-end">
                         <button type="submit" 
                                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 :disabled="selectedImages.length === 0">
                             Start Training
-                        </button>
-                    </div>
-                </form>
-            </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
         </div>
     </div>
 </div>
